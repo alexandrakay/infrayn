@@ -28,7 +28,7 @@ const RAIL_WIDTH = 220;
 const TOPBAR_HEIGHT = 56;
 
 const navItems = [
-  { label: "Review", icon: <PlayCircleIcon fontSize="small" />, href: "/" },
+  { label: "Review", icon: <PlayCircleIcon fontSize="small" />, href: "/review" },
   { label: "Reports", icon: <ListAltIcon fontSize="small" />, href: "/history" },
   { label: "Templates", icon: <GridViewIcon fontSize="small" />, href: "/templates" },
   { label: "Settings", icon: <TuneIcon fontSize="small" />, href: "/settings" },
