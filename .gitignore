@@ -36,6 +36,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# medium / blog drafts (local only, sent to Notion manually)
+/medium
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
