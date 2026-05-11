@@ -91,6 +91,34 @@ function LoadingState() {
   );
 }
 
+function StreamingState() {
+  return (
+    <Stack spacing={2} sx={{ p: 3 }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 0.5 }}>
+        <Box
+          sx={{
+            width: 8,
+            height: 8,
+            borderRadius: "50%",
+            bgcolor: "#2376ff",
+            animation: "pulse 1.2s ease-in-out infinite",
+            "@keyframes pulse": {
+              "0%, 100%": { opacity: 1 },
+              "50%": { opacity: 0.3 },
+            },
+          }}
+        />
+        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+          Receiving analysis...
+        </Typography>
+      </Box>
+      <Skeleton variant="rounded" height={110} sx={{ borderRadius: 3 }} />
+      <Skeleton variant="rounded" height={80} sx={{ borderRadius: 3 }} />
+      <Skeleton variant="rounded" height={80} sx={{ borderRadius: 3 }} />
+    </Stack>
+  );
+}
+
 interface FindingGroup { title: string; items: ArchitectureReview["bottlenecks"] }
 
 function formatReviewAsText(review: ArchitectureReview, mode: ReviewMode): string {
@@ -153,10 +181,11 @@ function formatReviewAsText(review: ArchitectureReview, mode: ReviewMode): strin
 interface Props {
   review: ArchitectureReview | null;
   loading: boolean;
+  streaming?: boolean;
   mode: ReviewMode;
 }
 
-export default function StructuredAnalysisPanel({ review, loading, mode }: Props) {
+export default function StructuredAnalysisPanel({ review, loading, streaming = false, mode }: Props) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -184,7 +213,9 @@ export default function StructuredAnalysisPanel({ review, loading, mode }: Props
         pb: { xs: 10, md: 0 },
       }}
     >
-      {loading ? (
+      {loading && streaming ? (
+        <StreamingState />
+      ) : loading ? (
         <LoadingState />
       ) : !review ? (
         <EmptyState />
