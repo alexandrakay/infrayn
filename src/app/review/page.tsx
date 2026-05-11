@@ -16,6 +16,7 @@ export default function ReviewWorkbench() {
   const { user, signIn } = useAuth();
   const [input, setInput] = useState("");
   const [mode, setMode] = useState<ReviewMode>("system");
+  const [systemName, setSystemName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [review, setReview] = useState<ArchitectureReview | null>(null);
@@ -53,7 +54,7 @@ export default function ReviewWorkbench() {
         await fetch("/api/save-review", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId: user.uid, mode, input, output: data.review }),
+          body: JSON.stringify({ userId: user.uid, mode, input, output: data.review, systemName }),
         });
       } else {
         // Mark that the anonymous free review has been used
@@ -86,8 +87,10 @@ export default function ReviewWorkbench() {
           mode={mode}
           loading={loading}
           error={error}
+          systemName={systemName}
           onInputChange={setInput}
           onModeChange={setMode}
+          onSystemNameChange={setSystemName}
           onSubmit={handleSubmit}
         />
         <StructuredAnalysisPanel review={review} loading={loading} mode={mode} />

@@ -32,6 +32,7 @@ export interface SavedReview {
   userId: string;
   mode: ReviewMode;
   input: string;
+  systemName?: string;
   output: ArchitectureReview;
   createdAt: number;
 }
