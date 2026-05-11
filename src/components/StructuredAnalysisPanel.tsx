@@ -344,6 +344,38 @@ export default function StructuredAnalysisPanel({ review, loading, streaming = f
                   <FindingCard key={i} item={item} />
                 ))}
               </Stack>
+
+              {review.llm_specific.model_recommendations.length > 0 && (
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="caption" sx={{ fontWeight: 700, color: "#7257ff", display: "block", mb: 1 }}>
+                    Model Recommendations
+                  </Typography>
+                  <Stack spacing={1}>
+                    {review.llm_specific.model_recommendations.map((r, i) => (
+                      <Box key={i} sx={{ display: "flex", gap: 1.5, p: 1.5, borderRadius: 2, bgcolor: "rgba(114,87,255,0.04)", border: "1px solid rgba(114,87,255,0.12)" }}>
+                        <Box sx={{ width: 6, height: 6, borderRadius: "50%", bgcolor: "#7257ff", mt: 0.75, flexShrink: 0 }} />
+                        <Typography variant="body2" color="text.secondary">{r}</Typography>
+                      </Box>
+                    ))}
+                  </Stack>
+                </Box>
+              )}
+
+              {review.llm_specific.prompt_architecture.length > 0 && (
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="caption" sx={{ fontWeight: 700, color: "#7257ff", display: "block", mb: 1 }}>
+                    Prompt Architecture
+                  </Typography>
+                  <Stack spacing={1}>
+                    {review.llm_specific.prompt_architecture.map((r, i) => (
+                      <Box key={i} sx={{ display: "flex", gap: 1.5, p: 1.5, borderRadius: 2, bgcolor: "rgba(114,87,255,0.04)", border: "1px solid rgba(114,87,255,0.12)" }}>
+                        <Box sx={{ width: 6, height: 6, borderRadius: "50%", bgcolor: "#7257ff", mt: 0.75, flexShrink: 0 }} />
+                        <Typography variant="body2" color="text.secondary">{r}</Typography>
+                      </Box>
+                    ))}
+                  </Stack>
+                </Box>
+              )}
             </Box>
           )}
 
