@@ -379,7 +379,7 @@ export default function StructuredAnalysisPanel({ review, loading, streaming = f
             </Box>
           )}
 
-          <PressureMap />
+          <PressureMap review={review} />
           <ReportOutline review={review} mode={mode} />
 
           <Button
