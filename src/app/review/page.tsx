@@ -1,46 +1,110 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Box, Stack, Button, Typography } from "@mui/material";
+import { useState } from "react";
+import { Box, Dialog, DialogContent } from "@mui/material";
 import AppShell from "@/components/AppShell";
+import ArchitectureInputPanel from "@/components/ArchitectureInputPanel";
 import StructuredAnalysisPanel from "@/components/StructuredAnalysisPanel";
-import { ArchitectureReview, ReviewMode } from "@/lib/types";
+import SignInPrompt from "@/components/SignInPrompt";
+import { useAuth } from "@/components/AuthProvider";
+import { ReviewMode, ArchitectureReview } from "@/lib/types";
 
-interface PendingReview {
-  review: ArchitectureReview;
-  input: string;
-  mode: ReviewMode;
-}
+const TOPBAR_HEIGHT = 56;
+const ANON_REVIEW_KEY = "infrayn_anon_used";
 
-export default function ReviewPage() {
-  const router = useRouter();
-  const [data, setData] = useState<PendingReview | null>(null);
+export default function ReviewWorkbench() {
+  const { user, signIn } = useAuth();
+  const [input, setInput] = useState("");
+  const [mode, setMode] = useState<ReviewMode>("system");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [review, setReview] = useState<ArchitectureReview | null>(null);
+  const [showSignInPrompt, setShowSignInPrompt] = useState(false);
 
-  useEffect(() => {
-    const raw = sessionStorage.getItem("pendingReview");
-    if (!raw) { router.push("/"); return; }
-    setData(JSON.parse(raw));
-  }, [router]);
+  const handleSubmit = async () => {
+    if (!input.trim()) return;
 
-  if (!data) return null;
+    // Block anonymous users who've already used their free review
+    if (!user && localStorage.getItem(ANON_REVIEW_KEY)) {
+      setShowSignInPrompt(true);
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    setReview(null);
+
+    try {
+      const res = await fetch("/api/review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input, mode, userId: user?.uid }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error ?? "Something went wrong.");
+        return;
+      }
+
+      setReview(data.review);
+
+      if (user) {
+        await fetch("/api/save-review", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: user.uid, mode, input, output: data.review }),
+        });
+      } else {
+        // Mark that the anonymous free review has been used
+        localStorage.setItem(ANON_REVIEW_KEY, "1");
+        // Show sign-in prompt after review renders
+        setTimeout(() => setShowSignInPrompt(true), 1200);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSignIn = async () => {
+    setShowSignInPrompt(false);
+    await signIn();
+  };
 
   return (
-    <AppShell title="Review Report">
-      <Box sx={{ maxWidth: 800, mx: "auto", p: 3 }}>
-        <Stack direction="row" sx={{ alignItems: "center", mb: 2 }}>
-          <Button variant="text" color="inherit" onClick={() => router.push("/")}>
-            ← Back to workbench
-          </Button>
-        </Stack>
-        <Box sx={{ height: "calc(100vh - 160px)", overflow: "auto" }}>
-          <StructuredAnalysisPanel
-            review={data.review}
-            loading={false}
-            mode={data.mode}
-          />
-        </Box>
+    <AppShell title="Review Workbench">
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", md: "2fr 3fr" },
+          height: { md: `calc(100vh - ${TOPBAR_HEIGHT}px)` },
+          overflow: { md: "hidden" },
+        }}
+      >
+        <ArchitectureInputPanel
+          input={input}
+          mode={mode}
+          loading={loading}
+          error={error}
+          onInputChange={setInput}
+          onModeChange={setMode}
+          onSubmit={handleSubmit}
+        />
+        <StructuredAnalysisPanel review={review} loading={loading} mode={mode} />
       </Box>
+
+      <Dialog
+        open={showSignInPrompt}
+        onClose={() => setShowSignInPrompt(false)}
+        slotProps={{ paper: { sx: { borderRadius: 4, bgcolor: "transparent", boxShadow: "none" } } }}
+      >
+        <DialogContent sx={{ p: 0 }}>
+          <SignInPrompt
+            onSignIn={handleSignIn}
+            onDismiss={() => setShowSignInPrompt(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </AppShell>
   );
 }
