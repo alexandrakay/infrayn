@@ -64,27 +64,41 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const message = await client.messages.create({
+  const stream = client.messages.stream({
     model: "claude-sonnet-4-6",
     max_tokens: 8096,
     system: buildSystemPrompt(mode),
     messages: [{ role: "user", content: input }],
   });
 
-  const raw =
-    message.content[0].type === "text" ? message.content[0].text : "";
+  const readable = new ReadableStream({
+    async start(controller) {
+      const encoder = new TextEncoder();
+      try {
+        for await (const chunk of stream) {
+          if (
+            chunk.type === "content_block_delta" &&
+            chunk.delta.type === "text_delta"
+          ) {
+            controller.enqueue(encoder.encode(chunk.delta.text));
+          }
+        }
+        // Send remaining header with rate limit info
+        controller.enqueue(
+          encoder.encode(`\n__REMAINING__:${remaining}`)
+        );
+      } catch {
+        controller.error(new Error("Stream failed"));
+      } finally {
+        controller.close();
+      }
+    },
+  });
 
-  const text = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim();
-
-  let review;
-  try {
-    review = JSON.parse(text);
-  } catch {
-    return NextResponse.json(
-      { error: "Failed to parse review response" },
-      { status: 500 }
-    );
-  }
-
-  return NextResponse.json({ review, remaining }, { status: 200 });
+  return new Response(readable, {
+    headers: {
+      "Content-Type": "text/plain; charset=utf-8",
+      "X-Content-Type-Options": "nosniff",
+    },
+  });
 }
