@@ -3,11 +3,12 @@ import { getAdminDb } from "@/lib/firebase-admin";
 import { ReviewMode, ArchitectureReview } from "@/lib/types";
 
 export async function POST(req: NextRequest) {
-  const { userId, mode, input, output } = (await req.json()) as {
+  const { userId, mode, input, output, systemName } = (await req.json()) as {
     userId: string;
     mode: ReviewMode;
     input: string;
     output: ArchitectureReview;
+    systemName?: string;
   };
 
   if (!userId || !mode || !input || !output) {
@@ -20,6 +21,7 @@ export async function POST(req: NextRequest) {
     mode,
     input,
     output,
+    ...(systemName?.trim() ? { systemName: systemName.trim() } : {}),
     createdAt: Date.now(),
   });
 

@@ -15,13 +15,15 @@ interface Props {
   mode: ReviewMode;
   loading: boolean;
   error: string;
+  systemName: string;
   onInputChange: (v: string) => void;
   onModeChange: (m: ReviewMode) => void;
+  onSystemNameChange: (v: string) => void;
   onSubmit: () => void;
 }
 
 export default function ArchitectureInputPanel({
-  input, mode, loading, error, onInputChange, onModeChange, onSubmit,
+  input, mode, loading, error, systemName, onInputChange, onModeChange, onSystemNameChange, onSubmit,
 }: Props) {
   return (
     <Box
@@ -46,12 +48,23 @@ export default function ArchitectureInputPanel({
         </Typography>
       </Box>
 
-      {/* Mode toggle */}
-      <Box sx={{ flexShrink: 0 }}>
-        <Typography variant="overline" color="text.secondary" sx={{ display: "block", mb: 1 }}>
-          Review lens
-        </Typography>
-        <ModeSelector value={mode} onChange={onModeChange} />
+      {/* System name + Mode toggle */}
+      <Box sx={{ flexShrink: 0, display: "flex", flexDirection: "column", gap: 1.5 }}>
+        <TextField
+          fullWidth
+          variant="outlined"
+          size="small"
+          placeholder="System name (optional, e.g. auth service)"
+          value={systemName}
+          onChange={(e) => onSystemNameChange(e.target.value)}
+          sx={{ "& .MuiOutlinedInput-root": { fontSize: "0.83rem" } }}
+        />
+        <Box>
+          <Typography variant="overline" color="text.secondary" sx={{ display: "block", mb: 1 }}>
+            Review lens
+          </Typography>
+          <ModeSelector value={mode} onChange={onModeChange} />
+        </Box>
       </Box>
 
       {/* Blueprint textarea — fills remaining space, scrolls internally */}
