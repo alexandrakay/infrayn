@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { Box, Typography, Paper, Stack, Skeleton, Divider, Button } from "@mui/material";
 import SpeedIcon from "@mui/icons-material/Speed";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import { ArchitectureReview, ReviewMode } from "@/lib/types";
+import CheckIcon from "@mui/icons-material/Check";
+import { ArchitectureReview, ReviewItem, ReviewMode } from "@/lib/types";
 import FindingCard from "./FindingCard";
 import PressureMap from "./PressureMap";
 import ReportOutline from "./ReportOutline";
@@ -91,6 +93,63 @@ function LoadingState() {
 
 interface FindingGroup { title: string; items: ArchitectureReview["bottlenecks"] }
 
+function formatReviewAsText(review: ArchitectureReview, mode: ReviewMode): string {
+  const lines: string[] = [];
+  const section = (title: string) => {
+    lines.push("", `== ${title} ==`, "");
+  };
+  const findings = (items: ReviewItem[]) => {
+    items.forEach((item) => {
+      lines.push(`[${item.severity.toUpperCase()}] ${item.description}`);
+    });
+  };
+
+  lines.push(`ARCHITECTURE REVIEW REPORT`);
+  lines.push(`Architecture Score: ${review.overall_score}/10`);
+  lines.push(review.summary);
+
+  section("Bottlenecks");
+  findings(review.bottlenecks);
+
+  section("Single Points of Failure");
+  findings(review.single_points_of_failure);
+
+  section("Scaling Concerns");
+  findings(review.scaling_concerns);
+
+  section("Security Gaps");
+  findings(review.security_gaps);
+
+  if (review.strengths.length > 0) {
+    section("Strengths");
+    review.strengths.forEach((s) => lines.push(`• ${s}`));
+  }
+
+  if (review.quick_wins.length > 0) {
+    section("Quick Wins");
+    review.quick_wins.forEach((w) => lines.push(`• ${w}`));
+  }
+
+  if (mode !== "system" && review.llm_specific) {
+    const llm = review.llm_specific;
+    section("LLM Pipeline Analysis");
+    if (llm.hallucination_risks.length > 0) {
+      lines.push("Hallucination Risks:");
+      findings(llm.hallucination_risks);
+    }
+    if (llm.model_recommendations.length > 0) {
+      lines.push("", "Model Recommendations:");
+      llm.model_recommendations.forEach((r) => lines.push(`• ${r}`));
+    }
+    if (llm.prompt_architecture.length > 0) {
+      lines.push("", "Prompt Architecture:");
+      llm.prompt_architecture.forEach((r) => lines.push(`• ${r}`));
+    }
+  }
+
+  return lines.join("\n").trim();
+}
+
 interface Props {
   review: ArchitectureReview | null;
   loading: boolean;
@@ -98,9 +157,13 @@ interface Props {
 }
 
 export default function StructuredAnalysisPanel({ review, loading, mode }: Props) {
+  const [copied, setCopied] = useState(false);
+
   const handleCopy = async () => {
     if (!review) return;
-    await navigator.clipboard.writeText(JSON.stringify(review, null, 2));
+    await navigator.clipboard.writeText(formatReviewAsText(review, mode));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const findingGroups: FindingGroup[] = review
@@ -217,11 +280,11 @@ export default function StructuredAnalysisPanel({ review, loading, mode }: Props
           <Button
             variant="outlined"
             fullWidth
-            startIcon={<ContentCopyIcon />}
+            startIcon={copied ? <CheckIcon /> : <ContentCopyIcon />}
             onClick={handleCopy}
-            sx={{ color: "text.secondary", borderColor: "divider" }}
+            sx={{ color: copied ? "#14a88a" : "text.secondary", borderColor: "divider" }}
           >
-            Copy report JSON
+            {copied ? "Copied!" : "Copy report"}
           </Button>
         </Stack>
       )}
