@@ -28,7 +28,7 @@ describe("SignInPage", () => {
   it("renders the Infrayn brand name", () => {
     (useAuth as jest.Mock).mockReturnValue({ user: null, signIn: jest.fn() });
     wrap(<SignInPage />);
-    expect(screen.getByText(/infrayn/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/infrayn/i).length).toBeGreaterThan(0);
   });
 
   it("renders a Sign in with Google button", () => {
