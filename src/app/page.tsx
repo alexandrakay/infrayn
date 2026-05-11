@@ -134,7 +134,7 @@ export default function LandingPage() {
             Get a structured review in seconds — scored findings, severity labels, and quick wins.
           </Typography>
 
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} justifyContent="center">
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} sx={{ justifyContent: "center" }}>
             <Button
               variant="contained"
               color="primary"

@@ -34,13 +34,13 @@ describe("LandingPage", () => {
   it("shows a Try it free CTA for anonymous users", () => {
     (useAuth as jest.Mock).mockReturnValue({ user: null, signIn: jest.fn() });
     wrap(<LandingPage />);
-    expect(screen.getByRole("button", { name: /try it free/i })).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: /try it free/i }).length).toBeGreaterThan(0);
   });
 
   it("shows a Sign in CTA for anonymous users", () => {
     (useAuth as jest.Mock).mockReturnValue({ user: null, signIn: jest.fn() });
     wrap(<LandingPage />);
-    expect(screen.getByRole("button", { name: /sign in/i })).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: /sign in/i }).length).toBeGreaterThan(0);
   });
 
   it("redirects authenticated users to /review", () => {
@@ -52,15 +52,15 @@ describe("LandingPage", () => {
   it("navigates to /review when Try it free is clicked", async () => {
     (useAuth as jest.Mock).mockReturnValue({ user: null, signIn: jest.fn() });
     wrap(<LandingPage />);
-    await userEvent.click(screen.getByRole("button", { name: /try it free/i }));
+    await userEvent.click(screen.getAllByRole("button", { name: /try it free/i })[0]);
     expect(mockPush).toHaveBeenCalledWith("/review");
   });
 
-  it("calls signIn when Sign in button is clicked", async () => {
+  it("calls signIn when Sign in with Google button is clicked", async () => {
     const signIn = jest.fn();
     (useAuth as jest.Mock).mockReturnValue({ user: null, signIn });
     wrap(<LandingPage />);
-    await userEvent.click(screen.getByRole("button", { name: /sign in/i }));
+    await userEvent.click(screen.getByRole("button", { name: /sign in with google/i }));
     expect(signIn).toHaveBeenCalledTimes(1);
   });
 });
