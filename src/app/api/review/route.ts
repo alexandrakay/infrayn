@@ -66,13 +66,15 @@ export async function POST(req: NextRequest) {
 
   const message = await client.messages.create({
     model: "claude-sonnet-4-6",
-    max_tokens: 2048,
+    max_tokens: 8096,
     system: buildSystemPrompt(mode),
     messages: [{ role: "user", content: input }],
   });
 
-  const text =
+  const raw =
     message.content[0].type === "text" ? message.content[0].text : "";
+
+  const text = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim();
 
   let review;
   try {
