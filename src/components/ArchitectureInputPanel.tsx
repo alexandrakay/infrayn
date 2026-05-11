@@ -31,13 +31,13 @@ export default function ArchitectureInputPanel({
         height: "100%",
         borderRight: "1px solid",
         borderColor: "divider",
-        overflow: "auto",
+        overflow: "hidden",
         p: 3,
         gap: 2.5,
       }}
     >
       {/* Headline */}
-      <Box>
+      <Box sx={{ flexShrink: 0 }}>
         <Typography variant="h1" sx={{ mb: 1, color: "text.primary" }}>
           Pressure-test your system before production does.
         </Typography>
@@ -47,30 +47,32 @@ export default function ArchitectureInputPanel({
       </Box>
 
       {/* Mode toggle */}
-      <Box>
+      <Box sx={{ flexShrink: 0 }}>
         <Typography variant="overline" color="text.secondary" sx={{ display: "block", mb: 1 }}>
           Review lens
         </Typography>
         <ModeSelector value={mode} onChange={onModeChange} />
       </Box>
 
-      {/* Blueprint textarea */}
+      {/* Blueprint textarea — fills remaining space, scrolls internally */}
       <Box
         sx={{
-          flexGrow: 1,
+          flex: 1,
+          minHeight: 0,
           borderRadius: 3,
           backgroundImage: BLUEPRINT,
           backgroundSize: "28px 28px",
           backgroundColor: "#eef4fc",
           boxShadow:
             "inset 7px 7px 14px rgba(77,91,124,0.16), inset -7px -7px 14px rgba(255,255,255,0.7)",
-          minHeight: 260,
+          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
         }}
       >
         <TextField
           multiline
           fullWidth
-          minRows={12}
           placeholder="Paste an architecture description, ADR, Terraform summary, diagram notes, or LLM pipeline design."
           value={input}
           onChange={(e) => onInputChange(e.target.value)}
@@ -86,14 +88,28 @@ export default function ArchitectureInputPanel({
                 alignItems: "flex-start",
                 bgcolor: "transparent",
                 boxShadow: "none",
+                height: "100%",
+                overflow: "auto",
               },
             },
           }}
-          sx={{ "& .MuiInputBase-root": { bgcolor: "transparent", boxShadow: "none" } }}
+          sx={{
+            flex: 1,
+            "& .MuiInputBase-root": {
+              bgcolor: "transparent",
+              boxShadow: "none",
+              height: "100%",
+            },
+            "& .MuiInputBase-input": {
+              height: "100% !important",
+              overflowY: "auto !important",
+              boxSizing: "border-box",
+            },
+          }}
         />
       </Box>
 
-      {error && <Alert severity="error">{error}</Alert>}
+      {error && <Alert severity="error" sx={{ flexShrink: 0 }}>{error}</Alert>}
 
       <Button
         variant="contained"
@@ -103,6 +119,7 @@ export default function ArchitectureInputPanel({
         onClick={onSubmit}
         disabled={loading || !input.trim()}
         startIcon={<PlayArrowIcon />}
+        sx={{ flexShrink: 0 }}
       >
         {loading ? "Analyzing..." : "Run architecture review"}
       </Button>

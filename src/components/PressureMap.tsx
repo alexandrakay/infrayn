@@ -3,11 +3,11 @@
 import { Box, Typography, Chip } from "@mui/material";
 
 const NODES = [
-  { id: "client", label: "Client", x: 8, y: 45, status: "ok" },
-  { id: "lb", label: "Load Balancer", x: 30, y: 45, status: "warn" },
-  { id: "api1", label: "API A", x: 55, y: 22, status: "ok" },
-  { id: "api2", label: "API B", x: 55, y: 68, status: "ok" },
-  { id: "db", label: "Database", x: 82, y: 45, status: "critical" },
+  { id: "client", label: "Client", x: 12, y: 50, status: "ok" },
+  { id: "lb", label: "Load Balancer", x: 32, y: 50, status: "warn" },
+  { id: "api1", label: "API A", x: 57, y: 25, status: "ok" },
+  { id: "api2", label: "API B", x: 57, y: 75, status: "ok" },
+  { id: "db", label: "Database", x: 80, y: 50, status: "critical" },
 ];
 
 const EDGES = [
@@ -61,7 +61,7 @@ export default function PressureMap() {
           height: 160,
         }}
       >
-        <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
           {EDGES.map(([from, to]) => {
             const f = getNode(from);
             const t = getNode(to);
