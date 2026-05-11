@@ -1,25 +1,35 @@
 "use client";
 
 import { useState } from "react";
-import { Box } from "@mui/material";
+import { Box, Dialog, DialogContent } from "@mui/material";
 import AppShell from "@/components/AppShell";
 import ArchitectureInputPanel from "@/components/ArchitectureInputPanel";
 import StructuredAnalysisPanel from "@/components/StructuredAnalysisPanel";
+import SignInPrompt from "@/components/SignInPrompt";
 import { useAuth } from "@/components/AuthProvider";
 import { ReviewMode, ArchitectureReview } from "@/lib/types";
 
 const TOPBAR_HEIGHT = 56;
+const ANON_REVIEW_KEY = "infrayn_anon_used";
 
 export default function ReviewWorkbench() {
-  const { user } = useAuth();
+  const { user, signIn } = useAuth();
   const [input, setInput] = useState("");
   const [mode, setMode] = useState<ReviewMode>("system");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [review, setReview] = useState<ArchitectureReview | null>(null);
+  const [showSignInPrompt, setShowSignInPrompt] = useState(false);
 
   const handleSubmit = async () => {
     if (!input.trim()) return;
+
+    // Block anonymous users who've already used their free review
+    if (!user && localStorage.getItem(ANON_REVIEW_KEY)) {
+      setShowSignInPrompt(true);
+      return;
+    }
+
     setLoading(true);
     setError("");
     setReview(null);
@@ -45,10 +55,20 @@ export default function ReviewWorkbench() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ userId: user.uid, mode, input, output: data.review }),
         });
+      } else {
+        // Mark that the anonymous free review has been used
+        localStorage.setItem(ANON_REVIEW_KEY, "1");
+        // Show sign-in prompt after review renders
+        setTimeout(() => setShowSignInPrompt(true), 1200);
       }
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSignIn = async () => {
+    setShowSignInPrompt(false);
+    await signIn();
   };
 
   return (
@@ -72,6 +92,19 @@ export default function ReviewWorkbench() {
         />
         <StructuredAnalysisPanel review={review} loading={loading} mode={mode} />
       </Box>
+
+      <Dialog
+        open={showSignInPrompt}
+        onClose={() => setShowSignInPrompt(false)}
+        slotProps={{ paper: { sx: { borderRadius: 4, bgcolor: "transparent", boxShadow: "none" } } }}
+      >
+        <DialogContent sx={{ p: 0 }}>
+          <SignInPrompt
+            onSignIn={handleSignIn}
+            onDismiss={() => setShowSignInPrompt(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </AppShell>
   );
 }
