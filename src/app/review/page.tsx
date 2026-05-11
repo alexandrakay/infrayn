@@ -18,6 +18,7 @@ export default function ReviewWorkbench() {
   const [mode, setMode] = useState<ReviewMode>("system");
   const [systemName, setSystemName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState("");
   const [review, setReview] = useState<ArchitectureReview | null>(null);
   const [showSignInPrompt, setShowSignInPrompt] = useState(false);
@@ -32,6 +33,7 @@ export default function ReviewWorkbench() {
     }
 
     setLoading(true);
+    setStreaming(false);
     setError("");
     setReview(null);
 
@@ -41,28 +43,64 @@ export default function ReviewWorkbench() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ input, mode, userId: user?.uid }),
       });
-      const data = await res.json();
 
       if (!res.ok) {
+        const data = await res.json();
         setError(data.error ?? "Something went wrong.");
         return;
       }
 
-      setReview(data.review);
+      const reader = res.body!.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let firstChunk = true;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const text = decoder.decode(value, { stream: true });
+        if (firstChunk) {
+          setStreaming(true);
+          firstChunk = false;
+        }
+        buffer += text;
+      }
+
+      setStreaming(false);
+
+      // Strip sentinel before parsing
+      const sentinelIdx = buffer.lastIndexOf("\n__REMAINING__:");
+      if (sentinelIdx !== -1) buffer = buffer.slice(0, sentinelIdx);
+
+      const cleaned = buffer
+        .replace(/^```(?:json)?\s*/i, "")
+        .replace(/\s*```\s*$/i, "")
+        .trim();
+
+      let parsed: ArchitectureReview;
+      try {
+        parsed = JSON.parse(cleaned);
+      } catch {
+        setError("Failed to parse review. Please try again.");
+        return;
+      }
+
+      setReview(parsed);
 
       if (user) {
         await fetch("/api/save-review", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId: user.uid, mode, input, output: data.review, systemName }),
+          body: JSON.stringify({ userId: user.uid, mode, input, output: parsed, systemName }),
         });
       } else {
-        // Mark that the anonymous free review has been used
         localStorage.setItem(ANON_REVIEW_KEY, "1");
-        // Show sign-in prompt after review renders
         setTimeout(() => setShowSignInPrompt(true), 1200);
       }
+    } catch {
+      setError("Something went wrong. Please try again.");
     } finally {
+      setStreaming(false);
       setLoading(false);
     }
   };
@@ -93,7 +131,7 @@ export default function ReviewWorkbench() {
           onSystemNameChange={setSystemName}
           onSubmit={handleSubmit}
         />
-        <StructuredAnalysisPanel review={review} loading={loading} mode={mode} />
+        <StructuredAnalysisPanel review={review} loading={loading} streaming={streaming} mode={mode} />
       </Box>
 
       <Dialog
