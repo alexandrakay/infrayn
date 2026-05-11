@@ -288,6 +288,48 @@ export default function StructuredAnalysisPanel({ review, loading, streaming = f
             </Box>
           )}
 
+          {/* Quick wins */}
+          {review.quick_wins.length > 0 && (
+            <Box>
+              <Typography
+                variant="overline"
+                color="text.secondary"
+                sx={{ display: "block", mb: 1.5 }}
+              >
+                Quick Wins
+              </Typography>
+              <Stack spacing={1}>
+                {review.quick_wins.map((w, i) => (
+                  <Box
+                    key={i}
+                    sx={{
+                      display: "flex",
+                      gap: 1.5,
+                      p: 1.5,
+                      borderRadius: 2,
+                      bgcolor: "rgba(35,118,255,0.04)",
+                      border: "1px solid rgba(35,118,255,0.12)",
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: 6,
+                        height: 6,
+                        borderRadius: "50%",
+                        bgcolor: "#2376ff",
+                        mt: 0.75,
+                        flexShrink: 0,
+                      }}
+                    />
+                    <Typography variant="body2" color="text.secondary">
+                      {w}
+                    </Typography>
+                  </Box>
+                ))}
+              </Stack>
+            </Box>
+          )}
+
           {/* LLM-specific */}
           {mode !== "system" && review.llm_specific && (
             <Box>
