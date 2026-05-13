@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Box, Dialog, DialogContent } from "@mui/material";
 import AppShell from "@/components/AppShell";
 import ArchitectureInputPanel from "@/components/ArchitectureInputPanel";
@@ -8,6 +8,7 @@ import StructuredAnalysisPanel from "@/components/StructuredAnalysisPanel";
 import SignInPrompt from "@/components/SignInPrompt";
 import { useAuth } from "@/components/AuthProvider";
 import { ReviewMode, ReviewSection, ALL_SECTIONS, ArchitectureReview } from "@/lib/types";
+import { loadUserPreferences, saveUserPreferences } from "@/lib/userPreferences";
 
 const TOPBAR_HEIGHT = 56;
 const ANON_REVIEW_KEY = "infrayn_anon_used";
@@ -23,6 +24,31 @@ export default function ReviewWorkbench() {
   const [error, setError] = useState("");
   const [review, setReview] = useState<ArchitectureReview | null>(null);
   const [showSignInPrompt, setShowSignInPrompt] = useState(false);
+  const [prefsLoaded, setPrefsLoaded] = useState(false);
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!user) {
+      setPrefsLoaded(true);
+      return;
+    }
+    loadUserPreferences(user.uid).then((prefs) => {
+      setMode(prefs.mode);
+      setSections(prefs.sections);
+      setPrefsLoaded(true);
+    });
+  }, [user]);
+
+  useEffect(() => {
+    if (!user || !prefsLoaded) return;
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      saveUserPreferences(user.uid, { mode, sections });
+    }, 600);
+    return () => {
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+    };
+  }, [mode, sections, user, prefsLoaded]);
 
   const handleSubmit = async () => {
     if (!input.trim()) return;
