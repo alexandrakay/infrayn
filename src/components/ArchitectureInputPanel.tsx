@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Box, Button, Stack, TextField, Typography, Alert } from "@mui/material";
+import { Box, Button, Checkbox, FormControlLabel, Stack, TextField, Typography, Alert } from "@mui/material";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import DashboardCustomizeIcon from "@mui/icons-material/DashboardCustomize";
 import ModeSelector from "./ModeSelector";
@@ -22,15 +22,17 @@ interface Props {
   loading: boolean;
   error: string;
   systemName: string;
+  quickScan: boolean;
   onInputChange: (v: string) => void;
   onModeChange: (m: ReviewMode) => void;
   onSectionsChange: (s: ReviewSection[]) => void;
   onSystemNameChange: (v: string) => void;
+  onQuickScanChange: (v: boolean) => void;
   onSubmit: () => void;
 }
 
 export default function ArchitectureInputPanel({
-  input, mode, sections, loading, error, systemName, onInputChange, onModeChange, onSectionsChange, onSystemNameChange, onSubmit,
+  input, mode, sections, loading, error, systemName, quickScan, onInputChange, onModeChange, onSectionsChange, onSystemNameChange, onQuickScanChange, onSubmit,
 }: Props) {
   const [pickerOpen, setPickerOpen] = useState(false);
 
@@ -154,6 +156,28 @@ export default function ArchitectureInputPanel({
       </Box>
 
       {error && <Alert severity="error" sx={{ flexShrink: 0 }}>{error}</Alert>}
+
+      <Box sx={{ flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <FormControlLabel
+          control={
+            <Checkbox
+              size="small"
+              checked={quickScan}
+              onChange={(e) => onQuickScanChange(e.target.checked)}
+              sx={{ color: quickScan ? "#f5a623" : undefined, "&.Mui-checked": { color: "#f5a623" } }}
+            />
+          }
+          label={
+            <Typography
+              variant="body2"
+              title="Faster, lower-cost review using Claude Haiku. Less detailed than a full review."
+              sx={{ fontSize: "0.8rem", color: quickScan ? "#f5a623" : "text.secondary", fontWeight: quickScan ? 600 : 400 }}
+            >
+              Quick Scan
+            </Typography>
+          }
+        />
+      </Box>
 
       <Button
         variant="contained"

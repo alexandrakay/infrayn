@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Box, Typography, Paper, Stack, Skeleton, Divider, Button } from "@mui/material";
+import { Box, Chip, Typography, Paper, Stack, Skeleton, Divider, Button } from "@mui/material";
 import SpeedIcon from "@mui/icons-material/Speed";
+import BoltIcon from "@mui/icons-material/Bolt";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import CheckIcon from "@mui/icons-material/Check";
 import { ArchitectureReview, ReviewItem, ReviewMode } from "@/lib/types";
@@ -10,7 +11,7 @@ import FindingCard from "./FindingCard";
 import PressureMap from "./PressureMap";
 import ReportOutline from "./ReportOutline";
 
-function ScoreCard({ review }: { review: ArchitectureReview }) {
+function ScoreCard({ review, quickScan }: { review: ArchitectureReview; quickScan?: boolean }) {
   const score = review.overall_score;
   const color = score >= 7 ? "#14a88a" : score >= 4 ? "#2376ff" : "#ef5a4c";
 
@@ -25,12 +26,29 @@ function ScoreCard({ review }: { review: ArchitectureReview }) {
         </Typography>
       </Box>
       <Divider orientation="vertical" sx={{ alignSelf: "stretch", height: "auto" }} />
-      <Box>
+      <Box sx={{ flex: 1, minWidth: 0 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mb: 0.5 }}>
           <SpeedIcon sx={{ fontSize: 12, color: "text.secondary" }} />
           <Typography variant="overline" color="text.secondary" sx={{ fontSize: "0.58rem" }}>
             Architecture Score
           </Typography>
+          {quickScan && (
+            <Chip
+              icon={<BoltIcon sx={{ fontSize: "12px !important" }} />}
+              label="Quick Scan"
+              size="small"
+              sx={{
+                height: 18,
+                fontSize: "0.58rem",
+                fontWeight: 700,
+                bgcolor: "rgba(245,166,35,0.12)",
+                color: "#f5a623",
+                border: "1px solid rgba(245,166,35,0.3)",
+                "& .MuiChip-icon": { color: "#f5a623", ml: 0.5 },
+                "& .MuiChip-label": { px: 0.75 },
+              }}
+            />
+          )}
         </Box>
         <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.55 }}>
           {review.summary}
@@ -183,9 +201,10 @@ interface Props {
   loading: boolean;
   streaming?: boolean;
   mode: ReviewMode;
+  quickScan?: boolean;
 }
 
-export default function StructuredAnalysisPanel({ review, loading, streaming = false, mode }: Props) {
+export default function StructuredAnalysisPanel({ review, loading, streaming = false, mode, quickScan = false }: Props) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -221,7 +240,7 @@ export default function StructuredAnalysisPanel({ review, loading, streaming = f
         <EmptyState />
       ) : (
         <Stack spacing={3} sx={{ p: 3 }}>
-          <ScoreCard review={review} />
+          <ScoreCard review={review} quickScan={quickScan} />
 
           {/* Finding groups — high severity first within each */}
           {findingGroups.map(({ title, items }) => (
