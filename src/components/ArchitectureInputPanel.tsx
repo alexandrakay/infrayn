@@ -1,13 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Box, Button, Checkbox, FormControlLabel, Stack, TextField, Typography, Alert } from "@mui/material";
+import { Box, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, Stack, TextField, Typography, Alert } from "@mui/material";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import DashboardCustomizeIcon from "@mui/icons-material/DashboardCustomize";
+import BookmarkAddIcon from "@mui/icons-material/BookmarkAdd";
 import ModeSelector from "./ModeSelector";
 import TemplatePicker from "./TemplatePicker";
 import FocusSelector from "./FocusSelector";
 import { ArchitectureTemplate } from "@/lib/templates";
+import { UserTemplate } from "@/lib/userTemplates";
 import { ReviewMode, ReviewSection } from "@/lib/types";
 
 const BLUEPRINT = `
@@ -23,22 +25,37 @@ interface Props {
   error: string;
   systemName: string;
   quickScan: boolean;
+  isAuthenticated?: boolean;
+  userTemplates?: UserTemplate[];
   onInputChange: (v: string) => void;
   onModeChange: (m: ReviewMode) => void;
   onSectionsChange: (s: ReviewSection[]) => void;
   onSystemNameChange: (v: string) => void;
   onQuickScanChange: (v: boolean) => void;
+  onSaveTemplate?: (name: string) => void;
+  onDeleteTemplate?: (id: string) => void;
   onSubmit: () => void;
 }
 
 export default function ArchitectureInputPanel({
-  input, mode, sections, loading, error, systemName, quickScan, onInputChange, onModeChange, onSectionsChange, onSystemNameChange, onQuickScanChange, onSubmit,
+  input, mode, sections, loading, error, systemName, quickScan, isAuthenticated = false, userTemplates = [],
+  onInputChange, onModeChange, onSectionsChange, onSystemNameChange, onQuickScanChange, onSaveTemplate, onDeleteTemplate, onSubmit,
 }: Props) {
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [templateName, setTemplateName] = useState("");
 
   const handleTemplateSelect = (template: ArchitectureTemplate) => {
     onInputChange(template.content);
     setPickerOpen(false);
+  };
+
+  const handleSaveConfirm = () => {
+    if (templateName.trim() && onSaveTemplate) {
+      onSaveTemplate(templateName.trim());
+    }
+    setTemplateName("");
+    setSaveDialogOpen(false);
   };
 
   return (
@@ -89,15 +106,28 @@ export default function ArchitectureInputPanel({
         <Typography variant="overline" color="text.secondary">
           Architecture description
         </Typography>
-        <Button
-          size="small"
-          variant="text"
-          startIcon={<DashboardCustomizeIcon sx={{ fontSize: 14 }} />}
-          onClick={() => setPickerOpen(true)}
-          sx={{ fontSize: "0.7rem", color: "text.secondary", textTransform: "none", minWidth: 0 }}
-        >
-          Start from a template
-        </Button>
+        <Box sx={{ display: "flex", gap: 0.5 }}>
+          {isAuthenticated && input.trim() && (
+            <Button
+              size="small"
+              variant="text"
+              startIcon={<BookmarkAddIcon sx={{ fontSize: 14 }} />}
+              onClick={() => setSaveDialogOpen(true)}
+              sx={{ fontSize: "0.7rem", color: "text.secondary", textTransform: "none", minWidth: 0 }}
+            >
+              Save as template
+            </Button>
+          )}
+          <Button
+            size="small"
+            variant="text"
+            startIcon={<DashboardCustomizeIcon sx={{ fontSize: 14 }} />}
+            onClick={() => setPickerOpen(true)}
+            sx={{ fontSize: "0.7rem", color: "text.secondary", textTransform: "none", minWidth: 0 }}
+          >
+            Start from a template
+          </Button>
+        </Box>
       </Box>
 
       {/* Blueprint textarea — fills remaining space, scrolls internally */}
@@ -197,7 +227,31 @@ export default function ArchitectureInputPanel({
         mode={mode}
         onSelect={handleTemplateSelect}
         onClose={() => setPickerOpen(false)}
+        userTemplates={userTemplates}
+        onDeleteTemplate={onDeleteTemplate}
       />
+
+      <Dialog open={saveDialogOpen} onClose={() => { setSaveDialogOpen(false); setTemplateName(""); }} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ fontSize: "0.95rem", fontWeight: 700 }}>Save as template</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            fullWidth
+            size="small"
+            placeholder="Template name"
+            value={templateName}
+            onChange={(e) => setTemplateName(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSaveConfirm()}
+            sx={{ mt: 1 }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button size="small" onClick={() => { setSaveDialogOpen(false); setTemplateName(""); }}>Cancel</Button>
+          <Button size="small" variant="contained" onClick={handleSaveConfirm} disabled={!templateName.trim()}>
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
