@@ -24,6 +24,7 @@ export default function ReviewWorkbench() {
   const [error, setError] = useState("");
   const [review, setReview] = useState<ArchitectureReview | null>(null);
   const [showSignInPrompt, setShowSignInPrompt] = useState(false);
+  const [quickScan, setQuickScan] = useState(false);
   const [prefsLoaded, setPrefsLoaded] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -68,7 +69,7 @@ export default function ReviewWorkbench() {
       const res = await fetch("/api/review", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ input, mode, userId: user?.uid, sections }),
+        body: JSON.stringify({ input, mode, userId: user?.uid, sections, quickScan }),
       });
 
       if (!res.ok) {
@@ -158,9 +159,11 @@ export default function ReviewWorkbench() {
           onModeChange={setMode}
           onSectionsChange={setSections}
           onSystemNameChange={setSystemName}
+          quickScan={quickScan}
+          onQuickScanChange={setQuickScan}
           onSubmit={handleSubmit}
         />
-        <StructuredAnalysisPanel review={review} loading={loading} streaming={streaming} mode={mode} />
+        <StructuredAnalysisPanel review={review} loading={loading} streaming={streaming} mode={mode} quickScan={quickScan} />
       </Box>
 
       <Dialog

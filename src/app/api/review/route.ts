@@ -3,6 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { buildSystemPrompt } from "@/lib/prompts";
 import { ReviewMode, ReviewSection, ALL_SECTIONS, RateLimitEntry } from "@/lib/types";
+import { selectModel, ALLOWED_MODELS } from "@/lib/models";
 
 const client = new Anthropic();
 
@@ -41,13 +42,18 @@ async function checkRateLimit(
 }
 
 export async function POST(req: NextRequest) {
-  const { input, mode, userId, sections } = (await req.json()) as {
+  const { input, mode, userId, sections, quickScan } = (await req.json()) as {
     input: string;
     mode: ReviewMode;
     userId?: string;
     sections?: ReviewSection[];
+    quickScan?: boolean;
   };
   const activeSections: ReviewSection[] = sections?.length ? sections : ALL_SECTIONS;
+  const model = selectModel(quickScan ?? false);
+  if (!(ALLOWED_MODELS as readonly string[]).includes(model)) {
+    return NextResponse.json({ error: "Invalid model" }, { status: 400 });
+  }
 
   if (!input?.trim()) {
     return NextResponse.json({ error: "Input is required" }, { status: 400 });
@@ -67,7 +73,7 @@ export async function POST(req: NextRequest) {
   }
 
   const stream = client.beta.messages.stream({
-    model: "claude-sonnet-4-6",
+    model,
     max_tokens: 8096,
     betas: ["prompt-caching-2024-07-31"],
     system: [{ type: "text", text: buildSystemPrompt(mode, activeSections), cache_control: { type: "ephemeral" } }],
