@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { buildSystemPrompt } from "@/lib/prompts";
-import { ReviewMode, RateLimitEntry } from "@/lib/types";
+import { ReviewMode, ReviewSection, ALL_SECTIONS, RateLimitEntry } from "@/lib/types";
 
 const client = new Anthropic();
 
@@ -41,11 +41,13 @@ async function checkRateLimit(
 }
 
 export async function POST(req: NextRequest) {
-  const { input, mode, userId } = (await req.json()) as {
+  const { input, mode, userId, sections } = (await req.json()) as {
     input: string;
     mode: ReviewMode;
     userId?: string;
+    sections?: ReviewSection[];
   };
+  const activeSections: ReviewSection[] = sections?.length ? sections : ALL_SECTIONS;
 
   if (!input?.trim()) {
     return NextResponse.json({ error: "Input is required" }, { status: 400 });
@@ -68,7 +70,7 @@ export async function POST(req: NextRequest) {
     model: "claude-sonnet-4-6",
     max_tokens: 8096,
     betas: ["prompt-caching-2024-07-31"],
-    system: [{ type: "text", text: buildSystemPrompt(mode), cache_control: { type: "ephemeral" } }],
+    system: [{ type: "text", text: buildSystemPrompt(mode, activeSections), cache_control: { type: "ephemeral" } }],
     messages: [{ role: "user", content: input }],
   });
 

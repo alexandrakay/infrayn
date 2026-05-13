@@ -1,5 +1,28 @@
 export type ReviewMode = "system" | "llm" | "both";
 
+export type ReviewSection =
+  | "bottlenecks"
+  | "single_points_of_failure"
+  | "scaling_concerns"
+  | "security_gaps"
+  | "quick_wins";
+
+export const ALL_SECTIONS: ReviewSection[] = [
+  "bottlenecks",
+  "single_points_of_failure",
+  "scaling_concerns",
+  "security_gaps",
+  "quick_wins",
+];
+
+export const SECTION_LABELS: Record<ReviewSection, string> = {
+  bottlenecks: "Bottlenecks",
+  single_points_of_failure: "Single Points of Failure",
+  scaling_concerns: "Scaling Concerns",
+  security_gaps: "Security Gaps",
+  quick_wins: "Quick Wins",
+};
+
 export type Severity = "high" | "medium" | "low";
 
 export interface ReviewItem {
