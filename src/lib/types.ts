@@ -60,6 +60,11 @@ export interface SavedReview {
   createdAt: number;
 }
 
+export interface UserPreferences {
+  mode: ReviewMode;
+  sections: ReviewSection[];
+}
+
 export interface RateLimitEntry {
   count: number;
   windowStart: number;

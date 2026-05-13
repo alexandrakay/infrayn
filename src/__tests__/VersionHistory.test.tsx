@@ -5,7 +5,7 @@ import { infraynTheme } from "@/lib/theme";
 import React from "react";
 import ArchitectureInputPanel from "@/components/ArchitectureInputPanel";
 import SystemHistory from "@/components/SystemHistory";
-import { SavedReview } from "@/lib/types";
+import { SavedReview, ALL_SECTIONS } from "@/lib/types";
 
 const wrap = (ui: React.ReactElement) =>
   render(<ThemeProvider theme={infraynTheme}>{ui}</ThemeProvider>);
@@ -13,11 +13,13 @@ const wrap = (ui: React.ReactElement) =>
 const baseProps = {
   input: "",
   mode: "system" as const,
+  sections: ALL_SECTIONS,
   loading: false,
   error: "",
   systemName: "",
   onInputChange: jest.fn(),
   onModeChange: jest.fn(),
+  onSectionsChange: jest.fn(),
   onSystemNameChange: jest.fn(),
   onSubmit: jest.fn(),
 };
