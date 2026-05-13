@@ -64,10 +64,11 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const stream = client.messages.stream({
+  const stream = client.beta.messages.stream({
     model: "claude-sonnet-4-6",
     max_tokens: 8096,
-    system: buildSystemPrompt(mode),
+    betas: ["prompt-caching-2024-07-31"],
+    system: [{ type: "text", text: buildSystemPrompt(mode), cache_control: { type: "ephemeral" } }],
     messages: [{ role: "user", content: input }],
   });
 
