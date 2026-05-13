@@ -7,7 +7,7 @@ import ArchitectureInputPanel from "@/components/ArchitectureInputPanel";
 import StructuredAnalysisPanel from "@/components/StructuredAnalysisPanel";
 import SignInPrompt from "@/components/SignInPrompt";
 import { useAuth } from "@/components/AuthProvider";
-import { ReviewMode, ArchitectureReview } from "@/lib/types";
+import { ReviewMode, ReviewSection, ALL_SECTIONS, ArchitectureReview } from "@/lib/types";
 
 const TOPBAR_HEIGHT = 56;
 const ANON_REVIEW_KEY = "infrayn_anon_used";
@@ -16,6 +16,7 @@ export default function ReviewWorkbench() {
   const { user, signIn } = useAuth();
   const [input, setInput] = useState("");
   const [mode, setMode] = useState<ReviewMode>("system");
+  const [sections, setSections] = useState<ReviewSection[]>(ALL_SECTIONS);
   const [systemName, setSystemName] = useState("");
   const [loading, setLoading] = useState(false);
   const [streaming, setStreaming] = useState(false);
@@ -41,7 +42,7 @@ export default function ReviewWorkbench() {
       const res = await fetch("/api/review", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ input, mode, userId: user?.uid }),
+        body: JSON.stringify({ input, mode, userId: user?.uid, sections }),
       });
 
       if (!res.ok) {
@@ -123,11 +124,13 @@ export default function ReviewWorkbench() {
         <ArchitectureInputPanel
           input={input}
           mode={mode}
+          sections={sections}
           loading={loading}
           error={error}
           systemName={systemName}
           onInputChange={setInput}
           onModeChange={setMode}
+          onSectionsChange={setSections}
           onSystemNameChange={setSystemName}
           onSubmit={handleSubmit}
         />

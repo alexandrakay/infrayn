@@ -6,8 +6,9 @@ import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import DashboardCustomizeIcon from "@mui/icons-material/DashboardCustomize";
 import ModeSelector from "./ModeSelector";
 import TemplatePicker from "./TemplatePicker";
+import FocusSelector from "./FocusSelector";
 import { ArchitectureTemplate } from "@/lib/templates";
-import { ReviewMode } from "@/lib/types";
+import { ReviewMode, ReviewSection } from "@/lib/types";
 
 const BLUEPRINT = `
   linear-gradient(rgba(35, 118, 255, 0.045) 1px, transparent 1px),
@@ -17,17 +18,19 @@ const BLUEPRINT = `
 interface Props {
   input: string;
   mode: ReviewMode;
+  sections: ReviewSection[];
   loading: boolean;
   error: string;
   systemName: string;
   onInputChange: (v: string) => void;
   onModeChange: (m: ReviewMode) => void;
+  onSectionsChange: (s: ReviewSection[]) => void;
   onSystemNameChange: (v: string) => void;
   onSubmit: () => void;
 }
 
 export default function ArchitectureInputPanel({
-  input, mode, loading, error, systemName, onInputChange, onModeChange, onSystemNameChange, onSubmit,
+  input, mode, sections, loading, error, systemName, onInputChange, onModeChange, onSectionsChange, onSystemNameChange, onSubmit,
 }: Props) {
   const [pickerOpen, setPickerOpen] = useState(false);
 
@@ -76,6 +79,7 @@ export default function ArchitectureInputPanel({
           </Typography>
           <ModeSelector value={mode} onChange={onModeChange} />
         </Box>
+        <FocusSelector sections={sections} onChange={onSectionsChange} />
       </Box>
 
       {/* Template picker trigger */}
