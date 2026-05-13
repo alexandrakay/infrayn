@@ -9,6 +9,7 @@ import SignInPrompt from "@/components/SignInPrompt";
 import { useAuth } from "@/components/AuthProvider";
 import { ReviewMode, ReviewSection, ALL_SECTIONS, ArchitectureReview } from "@/lib/types";
 import { loadUserPreferences, saveUserPreferences } from "@/lib/userPreferences";
+import { UserTemplate, loadUserTemplates, saveUserTemplate, deleteUserTemplate } from "@/lib/userTemplates";
 
 const TOPBAR_HEIGHT = 56;
 const ANON_REVIEW_KEY = "infrayn_anon_used";
@@ -26,6 +27,7 @@ export default function ReviewWorkbench() {
   const [showSignInPrompt, setShowSignInPrompt] = useState(false);
   const [quickScan, setQuickScan] = useState(false);
   const [prefsLoaded, setPrefsLoaded] = useState(false);
+  const [userTemplates, setUserTemplates] = useState<UserTemplate[]>([]);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -38,6 +40,7 @@ export default function ReviewWorkbench() {
       setSections(prefs.sections);
       setPrefsLoaded(true);
     });
+    loadUserTemplates(user.uid).then(setUserTemplates);
   }, [user]);
 
   useEffect(() => {
@@ -138,6 +141,18 @@ export default function ReviewWorkbench() {
     await signIn();
   };
 
+  const handleSaveTemplate = async (name: string) => {
+    if (!user) return;
+    const saved = await saveUserTemplate(user.uid, name, input);
+    setUserTemplates((prev) => [saved, ...prev]);
+  };
+
+  const handleDeleteTemplate = async (templateId: string) => {
+    if (!user) return;
+    await deleteUserTemplate(user.uid, templateId);
+    setUserTemplates((prev) => prev.filter((t) => t.id !== templateId));
+  };
+
   return (
     <AppShell title="Review Workbench">
       <Box
@@ -155,12 +170,16 @@ export default function ReviewWorkbench() {
           loading={loading}
           error={error}
           systemName={systemName}
+          isAuthenticated={!!user}
           onInputChange={setInput}
           onModeChange={setMode}
           onSectionsChange={setSections}
           onSystemNameChange={setSystemName}
           quickScan={quickScan}
           onQuickScanChange={setQuickScan}
+          onSaveTemplate={handleSaveTemplate}
+          onDeleteTemplate={handleDeleteTemplate}
+          userTemplates={userTemplates}
           onSubmit={handleSubmit}
         />
         <StructuredAnalysisPanel review={review} loading={loading} streaming={streaming} mode={mode} quickScan={quickScan} />

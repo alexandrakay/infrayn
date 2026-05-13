@@ -30,6 +30,12 @@ jest.mock("@/lib/userPreferences", () => ({
   saveUserPreferences: (...args: unknown[]) => mockSave(...args),
 }));
 
+jest.mock("@/lib/userTemplates", () => ({
+  loadUserTemplates: jest.fn().mockResolvedValue([]),
+  saveUserTemplate: jest.fn(),
+  deleteUserTemplate: jest.fn(),
+}));
+
 const mockUseAuth = jest.fn();
 jest.mock("@/components/AuthProvider", () => ({
   useAuth: () => mockUseAuth(),
