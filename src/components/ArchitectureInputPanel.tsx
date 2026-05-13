@@ -1,8 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { Box, Button, Stack, TextField, Typography, Alert } from "@mui/material";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import DashboardCustomizeIcon from "@mui/icons-material/DashboardCustomize";
 import ModeSelector from "./ModeSelector";
+import TemplatePicker from "./TemplatePicker";
+import { ArchitectureTemplate } from "@/lib/templates";
 import { ReviewMode } from "@/lib/types";
 
 const BLUEPRINT = `
@@ -25,6 +29,13 @@ interface Props {
 export default function ArchitectureInputPanel({
   input, mode, loading, error, systemName, onInputChange, onModeChange, onSystemNameChange, onSubmit,
 }: Props) {
+  const [pickerOpen, setPickerOpen] = useState(false);
+
+  const handleTemplateSelect = (template: ArchitectureTemplate) => {
+    onInputChange(template.content);
+    setPickerOpen(false);
+  };
+
   return (
     <Box
       sx={{
@@ -65,6 +76,22 @@ export default function ArchitectureInputPanel({
           </Typography>
           <ModeSelector value={mode} onChange={onModeChange} />
         </Box>
+      </Box>
+
+      {/* Template picker trigger */}
+      <Box sx={{ flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <Typography variant="overline" color="text.secondary">
+          Architecture description
+        </Typography>
+        <Button
+          size="small"
+          variant="text"
+          startIcon={<DashboardCustomizeIcon sx={{ fontSize: 14 }} />}
+          onClick={() => setPickerOpen(true)}
+          sx={{ fontSize: "0.7rem", color: "text.secondary", textTransform: "none", minWidth: 0 }}
+        >
+          Start from a template
+        </Button>
       </Box>
 
       {/* Blueprint textarea — fills remaining space, scrolls internally */}
@@ -136,6 +163,13 @@ export default function ArchitectureInputPanel({
       >
         {loading ? "Analyzing..." : "Run architecture review"}
       </Button>
+
+      <TemplatePicker
+        open={pickerOpen}
+        mode={mode}
+        onSelect={handleTemplateSelect}
+        onClose={() => setPickerOpen(false)}
+      />
     </Box>
   );
 }
