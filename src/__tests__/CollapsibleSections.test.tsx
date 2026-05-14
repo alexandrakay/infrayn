@@ -89,6 +89,8 @@ describe("Collapsible sections — LLM section", () => {
       ],
       model_recommendations: ["Use GPT-4 for reasoning"],
       prompt_architecture: ["Add few-shot examples"],
+      cost_optimization: [],
+      fallback_strategy: [],
     },
   };
 

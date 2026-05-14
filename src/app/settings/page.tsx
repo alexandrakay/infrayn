@@ -48,7 +48,7 @@ export default function SettingsPage() {
           <Typography variant="overline" color="text.secondary" sx={{ display: "block", mb: 2 }}>
             Account
           </Typography>
-          <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+          <Stack direction="row" spacing={2} sx={{ mb: 2, alignItems: "center" }}>
             <Avatar
               src={user.photoURL ?? undefined}
               alt={user.displayName ?? "User"}
