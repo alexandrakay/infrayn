@@ -1,4 +1,5 @@
-import { Box, Chip, Typography, Paper } from "@mui/material";
+import { useState } from "react";
+import { Box, Button, Chip, Collapse, Typography, Paper } from "@mui/material";
 import { ReviewItem } from "@/lib/types";
 
 const severity = {
@@ -13,7 +14,10 @@ interface Props {
 }
 
 export default function FindingCard({ item, showRemediation = false }: Props) {
+  const [open, setOpen] = useState(false);
   const s = severity[item.severity] ?? severity.low;
+  const hasRemediation = showRemediation && !!item.remediation;
+
   return (
     <Paper sx={{ p: 2, gap: 1, display: "flex", flexDirection: "column" }}>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -33,13 +37,39 @@ export default function FindingCard({ item, showRemediation = false }: Props) {
       <Typography variant="body2" sx={{ lineHeight: 1.55, color: "text.primary" }}>
         {item.description}
       </Typography>
-      {showRemediation && (
-        <Typography
-          variant="caption"
-          sx={{ color: "#2376ff", fontWeight: 700, cursor: "pointer", "&:hover": { opacity: 0.75 } }}
-        >
-          View remediation →
-        </Typography>
+      {hasRemediation && (
+        <>
+          <Button
+            size="small"
+            variant="text"
+            onClick={() => setOpen((v) => !v)}
+            sx={{
+              alignSelf: "flex-start",
+              p: 0,
+              minWidth: 0,
+              color: "#2376ff",
+              fontWeight: 700,
+              fontSize: "0.75rem",
+              textTransform: "none",
+              "&:hover": { bgcolor: "transparent", opacity: 0.75 },
+            }}
+          >
+            {open ? "Hide remediation →" : "View remediation →"}
+          </Button>
+          <Collapse in={open} timeout={0} unmountOnExit>
+            <Box
+              sx={{
+                mt: 0.5,
+                pl: 1.5,
+                borderLeft: "2px solid rgba(35,118,255,0.3)",
+              }}
+            >
+              <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.6 }}>
+                {item.remediation}
+              </Typography>
+            </Box>
+          </Collapse>
+        </>
       )}
     </Paper>
   );

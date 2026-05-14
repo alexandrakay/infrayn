@@ -4,16 +4,16 @@ export function buildSystemPrompt(mode: ReviewMode, sections: ReviewSection[] = 
   const has = (s: ReviewSection) => sections.includes(s);
 
   const sectionFields: string[] = [
-    has("bottlenecks") ? `  "bottlenecks": [{ "description": "string", "severity": "high" | "medium" | "low" }]` : "",
-    has("single_points_of_failure") ? `  "single_points_of_failure": [{ "description": "string", "severity": "high" | "medium" | "low" }]` : "",
-    has("scaling_concerns") ? `  "scaling_concerns": [{ "description": "string", "severity": "high" | "medium" | "low" }]` : "",
-    has("security_gaps") ? `  "security_gaps": [{ "description": "string", "severity": "high" | "medium" | "low" }]` : "",
+    has("bottlenecks") ? `  "bottlenecks": [{ "description": "string", "severity": "high" | "medium" | "low", "remediation": "string" }]` : "",
+    has("single_points_of_failure") ? `  "single_points_of_failure": [{ "description": "string", "severity": "high" | "medium" | "low", "remediation": "string" }]` : "",
+    has("scaling_concerns") ? `  "scaling_concerns": [{ "description": "string", "severity": "high" | "medium" | "low", "remediation": "string" }]` : "",
+    has("security_gaps") ? `  "security_gaps": [{ "description": "string", "severity": "high" | "medium" | "low", "remediation": "string" }]` : "",
     has("quick_wins") ? `  "quick_wins": ["string"]` : "",
   ].filter(Boolean);
 
   const llmBlock = mode !== "system" ? `  "llm_specific": {
     "model_recommendations": ["string"],
-    "hallucination_risks": [{ "description": "string", "severity": "high" | "medium" | "low" }],
+    "hallucination_risks": [{ "description": "string", "severity": "high" | "medium" | "low", "remediation": "string" }],
     "prompt_architecture": ["string"],
     "cost_optimization": ["string"],
     "fallback_strategy": ["string"]
