@@ -81,6 +81,31 @@ Components:
 - No VPC; all services use public AWS endpoints with IAM roles for access control`,
   },
   {
+    id: "firebase-gcp-terraform",
+    name: "Firebase / GCP Stack",
+    description: "Flutter mobile app backed by Firestore, Auth, Storage, and Cloud Functions",
+    suggestedMode: "system",
+    content: `System: Protekt — a Flutter mobile app backed by a Firebase/GCP serverless stack.
+
+Infrastructure (Terraform-managed):
+- GCP APIs enabled: Firestore, Cloud Functions, Cloud Build, Identity Toolkit, Firebase Storage
+- Firebase project bootstrapped via google-beta provider
+- Firestore (FIRESTORE_NATIVE) in us-central1 — primary database for jobs, users, agencies, and shifts
+- Firebase Authentication (Identity Platform) — email/password with no duplicate emails allowed
+- Cloud Storage bucket (appspot.com convention) linked to Firebase; uniform bucket-level access enabled
+- Firebase app registrations for Android (com.example.protekt_mobile_flutter) and iOS (com.example.protektMobileFlutter)
+
+Runtime architecture:
+- Flutter client uses firebase_core to connect to registered app credentials
+- Cloud Functions (Node.js, us-central1) handle serverless backend logic; deployed via Firebase CLI
+- Firestore stores user profiles, role claims, shift assignments, and document URLs (guardLicense, profileImage)
+- Firebase Storage holds profile images, W9 forms, and license documents — URLs stored as Firestore fields
+- Firebase Auth issues JWTs with custom role claims consumed by Cloud Functions for authorization
+- Push notifications via Firebase Cloud Messaging (FCM)
+- No VPC; all services communicate over Firebase/GCP managed endpoints
+- No explicit caching layer; Firestore offline persistence used on the client side`,
+  },
+  {
     id: "crud-rest-api",
     name: "CRUD REST API",
     description: "Express/FastAPI + single DB, no caching",
