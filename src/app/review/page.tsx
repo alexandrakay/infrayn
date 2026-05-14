@@ -32,6 +32,18 @@ export default function ReviewWorkbench() {
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    const raw = sessionStorage.getItem("pendingReview");
+    if (!raw) return;
+    sessionStorage.removeItem("pendingReview");
+    try {
+      const { review: r, input: i, mode: m } = JSON.parse(raw);
+      if (r) setReview(r);
+      if (i) setInput(i);
+      if (m) setMode(m);
+    } catch { /* malformed — ignore */ }
+  }, []);
+
+  useEffect(() => {
     if (!user) {
       setPrefsLoaded(true);
       return;
