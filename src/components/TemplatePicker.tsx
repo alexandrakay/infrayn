@@ -46,7 +46,7 @@ export default function TemplatePicker({ open, mode, onSelect, onClose, userTemp
         <Typography component="span" variant="h6" sx={{ fontWeight: 700, fontSize: "1rem" }}>
           Start from a template
         </Typography>
-        <IconButton size="small" onClick={onClose} aria-label="close">
+        <IconButton size="small" onClick={onClose} aria-label="close" autoFocus>
           <CloseIcon fontSize="small" />
         </IconButton>
       </DialogTitle>
