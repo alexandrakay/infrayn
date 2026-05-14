@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { Box, Chip, Typography, Paper, Stack, Skeleton, Divider, Button } from "@mui/material";
+import React, { useState } from "react";
+import { Box, Chip, Collapse, Typography, Paper, Stack, Skeleton, Divider, Button } from "@mui/material";
 import SpeedIcon from "@mui/icons-material/Speed";
 import BoltIcon from "@mui/icons-material/Bolt";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import CheckIcon from "@mui/icons-material/Check";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { ArchitectureReview, ReviewItem, ReviewMode } from "@/lib/types";
 import FindingCard from "./FindingCard";
 import PressureMap from "./PressureMap";
@@ -139,6 +141,49 @@ function StreamingState() {
 
 interface FindingGroup { title: string; items: ArchitectureReview["bottlenecks"] }
 
+function CollapsibleSection({ title, count, color, children }: {
+  title: string;
+  count: number;
+  color?: string;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(true);
+
+  return (
+    <Box>
+      <Box
+        role="button"
+        tabIndex={0}
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+        onKeyDown={(e) => e.key === "Enter" && setOpen((v) => !v)}
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          cursor: "pointer",
+          userSelect: "none",
+          mb: open ? 1.5 : 0,
+        }}
+      >
+        <Typography
+          variant="overline"
+          sx={{ color: color ?? "text.secondary", fontSize: "inherit" }}
+        >
+          {title}{!open ? ` (${count})` : ""}
+        </Typography>
+        {open
+          ? <ExpandLessIcon sx={{ fontSize: 16, color: color ?? "text.secondary" }} aria-hidden />
+          : <ExpandMoreIcon sx={{ fontSize: 16, color: color ?? "text.secondary" }} aria-hidden />
+        }
+      </Box>
+      <Collapse in={open} unmountOnExit timeout={0}>
+        {children}
+      </Collapse>
+    </Box>
+  );
+}
+
 function formatReviewAsText(review: ArchitectureReview, mode: ReviewMode): string {
   const lines: string[] = [];
   const section = (title: string) => {
@@ -244,14 +289,7 @@ export default function StructuredAnalysisPanel({ review, loading, streaming = f
 
           {/* Finding groups — high severity first within each */}
           {findingGroups.map(({ title, items }) => (
-            <Box key={title}>
-              <Typography
-                variant="overline"
-                color="text.secondary"
-                sx={{ display: "block", mb: 1.5 }}
-              >
-                {title}
-              </Typography>
+            <CollapsibleSection key={title} title={title} count={items.length}>
               <Stack spacing={1.5}>
                 {[...items]
                   .sort((a, b) => {
@@ -262,19 +300,12 @@ export default function StructuredAnalysisPanel({ review, loading, streaming = f
                     <FindingCard key={i} item={item} showRemediation />
                   ))}
               </Stack>
-            </Box>
+            </CollapsibleSection>
           ))}
 
           {/* Strengths */}
           {review.strengths.length > 0 && (
-            <Box>
-              <Typography
-                variant="overline"
-                color="text.secondary"
-                sx={{ display: "block", mb: 1.5 }}
-              >
-                Strengths
-              </Typography>
+            <CollapsibleSection title="Strengths" count={review.strengths.length}>
               <Stack spacing={1}>
                 {review.strengths.map((s, i) => (
                   <Box
@@ -304,19 +335,12 @@ export default function StructuredAnalysisPanel({ review, loading, streaming = f
                   </Box>
                 ))}
               </Stack>
-            </Box>
+            </CollapsibleSection>
           )}
 
           {/* Quick wins */}
           {review.quick_wins.length > 0 && (
-            <Box>
-              <Typography
-                variant="overline"
-                color="text.secondary"
-                sx={{ display: "block", mb: 1.5 }}
-              >
-                Quick Wins
-              </Typography>
+            <CollapsibleSection title="Quick Wins" count={review.quick_wins.length}>
               <Stack spacing={1}>
                 {review.quick_wins.map((w, i) => (
                   <Box
@@ -346,18 +370,16 @@ export default function StructuredAnalysisPanel({ review, loading, streaming = f
                   </Box>
                 ))}
               </Stack>
-            </Box>
+            </CollapsibleSection>
           )}
 
           {/* LLM-specific */}
           {mode !== "system" && review.llm_specific && (
-            <Box>
-              <Typography
-                variant="overline"
-                sx={{ display: "block", mb: 1.5, color: "#7257ff" }}
-              >
-                LLM Pipeline Analysis
-              </Typography>
+            <CollapsibleSection
+              title="LLM Pipeline Analysis"
+              count={review.llm_specific.hallucination_risks.length}
+              color="#7257ff"
+            >
               <Stack spacing={1.5}>
                 {review.llm_specific.hallucination_risks.map((item, i) => (
                   <FindingCard key={i} item={item} />
@@ -395,7 +417,7 @@ export default function StructuredAnalysisPanel({ review, loading, streaming = f
                   </Stack>
                 </Box>
               )}
-            </Box>
+            </CollapsibleSection>
           )}
 
           <PressureMap review={review} />
