@@ -32,6 +32,7 @@ interface Props {
   onSectionsChange: (s: ReviewSection[]) => void;
   onSystemNameChange: (v: string) => void;
   onQuickScanChange: (v: boolean) => void;
+  remainingReviews?: number | null;
   onSaveTemplate?: (name: string) => void;
   onDeleteTemplate?: (id: string) => void;
   onSubmit: () => void;
@@ -39,6 +40,7 @@ interface Props {
 
 export default function ArchitectureInputPanel({
   input, mode, sections, loading, error, systemName, quickScan, isAuthenticated = false, userTemplates = [],
+  remainingReviews,
   onInputChange, onModeChange, onSectionsChange, onSystemNameChange, onQuickScanChange, onSaveTemplate, onDeleteTemplate, onSubmit,
 }: Props) {
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -207,6 +209,14 @@ export default function ArchitectureInputPanel({
             </Typography>
           }
         />
+        {remainingReviews != null && (
+          <Typography
+            variant="caption"
+            sx={{ color: remainingReviews === 0 ? "#ef5a4c" : "text.secondary", fontWeight: 600 }}
+          >
+            {remainingReviews === 1 ? "1 review left" : `${remainingReviews} reviews left`}
+          </Typography>
+        )}
       </Box>
 
       <Button
@@ -215,11 +225,11 @@ export default function ArchitectureInputPanel({
         size="large"
         fullWidth
         onClick={onSubmit}
-        disabled={loading || !input.trim()}
+        disabled={loading || !input.trim() || remainingReviews === 0}
         startIcon={<PlayArrowIcon />}
         sx={{ flexShrink: 0 }}
       >
-        {loading ? "Analyzing..." : "Run architecture review"}
+        {loading ? "Analyzing..." : remainingReviews === 0 ? "Limit reached — resets in 1 hour" : "Run architecture review"}
       </Button>
 
       <TemplatePicker

@@ -28,6 +28,7 @@ export default function ReviewWorkbench() {
   const [quickScan, setQuickScan] = useState(false);
   const [prefsLoaded, setPrefsLoaded] = useState(false);
   const [userTemplates, setUserTemplates] = useState<UserTemplate[]>([]);
+  const [remainingReviews, setRemainingReviews] = useState<number | null>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -99,9 +100,14 @@ export default function ReviewWorkbench() {
 
       setStreaming(false);
 
-      // Strip sentinel before parsing
+      // Strip sentinel and capture remaining count
       const sentinelIdx = buffer.lastIndexOf("\n__REMAINING__:");
-      if (sentinelIdx !== -1) buffer = buffer.slice(0, sentinelIdx);
+      if (sentinelIdx !== -1) {
+        const sentinelStr = buffer.slice(sentinelIdx + "\n__REMAINING__:".length);
+        const parsed = parseInt(sentinelStr, 10);
+        if (!isNaN(parsed)) setRemainingReviews(parsed);
+        buffer = buffer.slice(0, sentinelIdx);
+      }
 
       const cleaned = buffer
         .replace(/^```(?:json)?\s*/i, "")
@@ -177,6 +183,7 @@ export default function ReviewWorkbench() {
           onSystemNameChange={setSystemName}
           quickScan={quickScan}
           onQuickScanChange={setQuickScan}
+          remainingReviews={remainingReviews}
           onSaveTemplate={handleSaveTemplate}
           onDeleteTemplate={handleDeleteTemplate}
           userTemplates={userTemplates}
