@@ -28,6 +28,7 @@ export type Severity = "high" | "medium" | "low";
 export interface ReviewItem {
   description: string;
   severity: Severity;
+  remediation?: string;
 }
 
 export interface LLMSpecific {
