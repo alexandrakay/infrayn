@@ -32,15 +32,25 @@ export default function ReviewWorkbench() {
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    const raw = sessionStorage.getItem("pendingReview");
-    if (!raw) return;
-    sessionStorage.removeItem("pendingReview");
-    try {
-      const { review: r, input: i, mode: m } = JSON.parse(raw);
-      if (r) setReview(r);
-      if (i) setInput(i);
-      if (m) setMode(m);
-    } catch { /* malformed — ignore */ }
+    const rawReview = sessionStorage.getItem("pendingReview");
+    if (rawReview) {
+      sessionStorage.removeItem("pendingReview");
+      try {
+        const { review: r, input: i, mode: m } = JSON.parse(rawReview);
+        if (r) setReview(r);
+        if (i) setInput(i);
+        if (m) setMode(m);
+      } catch { /* malformed — ignore */ }
+    }
+
+    const rawTemplate = sessionStorage.getItem("pendingTemplate");
+    if (rawTemplate) {
+      sessionStorage.removeItem("pendingTemplate");
+      try {
+        const { content } = JSON.parse(rawTemplate);
+        if (content) setInput(content);
+      } catch { /* malformed — ignore */ }
+    }
   }, []);
 
   useEffect(() => {
