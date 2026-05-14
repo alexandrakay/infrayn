@@ -22,7 +22,7 @@ jest.mock("@/components/SignInPrompt", () => ({
 }));
 
 const mockLoad = jest.fn();
-const mockSave = jest.fn();
+const mockSave = jest.fn().mockResolvedValue(undefined);
 
 jest.mock("@/lib/userPreferences", () => ({
   DEFAULT_PREFERENCES: { mode: "system", sections: ALL_SECTIONS },

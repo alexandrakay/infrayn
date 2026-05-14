@@ -236,6 +236,14 @@ function formatReviewAsText(review: ArchitectureReview, mode: ReviewMode): strin
       lines.push("", "Prompt Architecture:");
       llm.prompt_architecture.forEach((r) => lines.push(`• ${r}`));
     }
+    if (llm.cost_optimization?.length > 0) {
+      lines.push("", "Cost Optimization:");
+      llm.cost_optimization.forEach((r) => lines.push(`• ${r}`));
+    }
+    if (llm.fallback_strategy?.length > 0) {
+      lines.push("", "Fallback Strategy:");
+      llm.fallback_strategy.forEach((r) => lines.push(`• ${r}`));
+    }
   }
 
   return lines.join("\n").trim();
@@ -409,6 +417,38 @@ export default function StructuredAnalysisPanel({ review, loading, streaming = f
                   </Typography>
                   <Stack spacing={1}>
                     {review.llm_specific.prompt_architecture.map((r, i) => (
+                      <Box key={i} sx={{ display: "flex", gap: 1.5, p: 1.5, borderRadius: 2, bgcolor: "rgba(114,87,255,0.04)", border: "1px solid rgba(114,87,255,0.12)" }}>
+                        <Box sx={{ width: 6, height: 6, borderRadius: "50%", bgcolor: "#7257ff", mt: 0.75, flexShrink: 0 }} />
+                        <Typography variant="body2" color="text.secondary">{r}</Typography>
+                      </Box>
+                    ))}
+                  </Stack>
+                </Box>
+              )}
+
+              {(review.llm_specific.cost_optimization?.length ?? 0) > 0 && (
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="caption" sx={{ fontWeight: 700, color: "#7257ff", display: "block", mb: 1 }}>
+                    Cost Optimization
+                  </Typography>
+                  <Stack spacing={1}>
+                    {review.llm_specific.cost_optimization.map((r, i) => (
+                      <Box key={i} sx={{ display: "flex", gap: 1.5, p: 1.5, borderRadius: 2, bgcolor: "rgba(114,87,255,0.04)", border: "1px solid rgba(114,87,255,0.12)" }}>
+                        <Box sx={{ width: 6, height: 6, borderRadius: "50%", bgcolor: "#7257ff", mt: 0.75, flexShrink: 0 }} />
+                        <Typography variant="body2" color="text.secondary">{r}</Typography>
+                      </Box>
+                    ))}
+                  </Stack>
+                </Box>
+              )}
+
+              {(review.llm_specific.fallback_strategy?.length ?? 0) > 0 && (
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="caption" sx={{ fontWeight: 700, color: "#7257ff", display: "block", mb: 1 }}>
+                    Fallback Strategy
+                  </Typography>
+                  <Stack spacing={1}>
+                    {review.llm_specific.fallback_strategy.map((r, i) => (
                       <Box key={i} sx={{ display: "flex", gap: 1.5, p: 1.5, borderRadius: 2, bgcolor: "rgba(114,87,255,0.04)", border: "1px solid rgba(114,87,255,0.12)" }}>
                         <Box sx={{ width: 6, height: 6, borderRadius: "50%", bgcolor: "#7257ff", mt: 0.75, flexShrink: 0 }} />
                         <Typography variant="body2" color="text.secondary">{r}</Typography>

@@ -36,19 +36,21 @@ export default function ReviewWorkbench() {
       setPrefsLoaded(true);
       return;
     }
-    loadUserPreferences(user.uid).then((prefs) => {
-      setMode(prefs.mode);
-      setSections(prefs.sections);
-      setPrefsLoaded(true);
-    });
-    loadUserTemplates(user.uid).then(setUserTemplates);
+    loadUserPreferences(user.uid)
+      .then((prefs) => {
+        setMode(prefs.mode);
+        setSections(prefs.sections);
+        setPrefsLoaded(true);
+      })
+      .catch(() => setPrefsLoaded(true));
+    loadUserTemplates(user.uid).then(setUserTemplates).catch(() => {});
   }, [user]);
 
   useEffect(() => {
     if (!user || !prefsLoaded) return;
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
-      saveUserPreferences(user.uid, { mode, sections });
+      saveUserPreferences(user.uid, { mode, sections }).catch(() => {});
     }, 600);
     return () => {
       if (saveTimer.current) clearTimeout(saveTimer.current);
