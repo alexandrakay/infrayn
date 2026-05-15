@@ -10,6 +10,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { ArchitectureReview, ReviewItem, ReviewMode } from "@/lib/types";
 import { useResolvedFindings } from "@/lib/useResolvedFindings";
+import { formatReviewAsMarkdown } from "@/lib/formatReview";
 import FindingCard from "./FindingCard";
 import PressureMap from "./PressureMap";
 import ReportOutline from "./ReportOutline";
@@ -280,6 +281,19 @@ export default function StructuredAnalysisPanel({ review, loading, streaming = f
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleDownloadMarkdown = () => {
+    if (!review) return;
+    const md = formatReviewAsMarkdown(review, mode, systemName);
+    const slug = systemName.trim()
+      ? systemName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-")
+      : "architecture-review";
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([md], { type: "text/markdown" }));
+    a.download = `${slug}.md`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+
   const findingGroups: FindingGroup[] = review
     ? [
         { title: "Bottlenecks", category: "bottlenecks", items: review.bottlenecks },
@@ -508,15 +522,25 @@ export default function StructuredAnalysisPanel({ review, loading, streaming = f
           <PressureMap review={review} />
           <ReportOutline review={review} mode={mode} />
 
-          <Button
-            variant="outlined"
-            fullWidth
-            startIcon={copied ? <CheckIcon /> : <ContentCopyIcon />}
-            onClick={handleCopy}
-            sx={{ color: copied ? "#14a88a" : "text.secondary", borderColor: "divider" }}
-          >
-            {copied ? "Copied!" : "Copy report"}
-          </Button>
+          <Stack direction="row" spacing={1.5}>
+            <Button
+              variant="outlined"
+              fullWidth
+              startIcon={copied ? <CheckIcon /> : <ContentCopyIcon />}
+              onClick={handleCopy}
+              sx={{ color: copied ? "#14a88a" : "text.secondary", borderColor: "divider" }}
+            >
+              {copied ? "Copied!" : "Copy report"}
+            </Button>
+            <Button
+              variant="outlined"
+              fullWidth
+              onClick={handleDownloadMarkdown}
+              sx={{ color: "text.secondary", borderColor: "divider" }}
+            >
+              Download .md
+            </Button>
+          </Stack>
         </Stack>
       )}
     </Box>
