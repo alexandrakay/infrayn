@@ -27,6 +27,12 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Analytics events — append-only, no auth required
+    match /events/{eventId} {
+      allow create: if request.resource.data.keys().hasAll(['event', 'sessionId', 'timestamp']);
+      allow read, update, delete: if false;
+    }
+
     // Deny everything else by default
     match /{document=**} {
       allow read, write: if false;
