@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { Box, Button, Chip, Collapse, Typography, Paper } from "@mui/material";
+import { Box, Button, Chip, Collapse, IconButton, Tooltip, Typography, Paper } from "@mui/material";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import { ReviewItem } from "@/lib/types";
 
 const severity = {
@@ -11,15 +13,42 @@ const severity = {
 interface Props {
   item: ReviewItem;
   showRemediation?: boolean;
+  resolved?: boolean;
+  onToggle?: () => void;
+  isAuthenticated?: boolean;
 }
 
-export default function FindingCard({ item, showRemediation = false }: Props) {
+export default function FindingCard({ item, showRemediation = false, resolved = false, onToggle, isAuthenticated = false }: Props) {
   const [open, setOpen] = useState(false);
   const s = severity[item.severity] ?? severity.low;
   const hasRemediation = showRemediation && !!item.remediation;
 
+  const resolveButton = (
+    <IconButton
+      size="small"
+      onClick={isAuthenticated ? onToggle : undefined}
+      disabled={!isAuthenticated}
+      aria-label={resolved ? "Mark unresolved" : "Mark resolved"}
+      sx={{ p: 0.5, ml: "auto", flexShrink: 0 }}
+    >
+      {resolved
+        ? <CheckCircleIcon sx={{ fontSize: 17, color: "#14a88a" }} />
+        : <CheckCircleOutlineIcon sx={{ fontSize: 17, color: "text.disabled" }} />
+      }
+    </IconButton>
+  );
+
   return (
-    <Paper sx={{ p: 2, gap: 1, display: "flex", flexDirection: "column" }}>
+    <Paper
+      sx={{
+        p: 2,
+        gap: 1,
+        display: "flex",
+        flexDirection: "column",
+        opacity: resolved ? 0.42 : 1,
+        transition: "opacity 0.2s",
+      }}
+    >
       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
         <Chip
           label={s.label}
@@ -33,8 +62,23 @@ export default function FindingCard({ item, showRemediation = false }: Props) {
             "& .MuiChip-label": { px: 1 },
           }}
         />
+        {isAuthenticated
+          ? resolveButton
+          : (
+            <Tooltip title="Sign in to track progress" placement="top" arrow>
+              <span style={{ marginLeft: "auto" }}>{resolveButton}</span>
+            </Tooltip>
+          )
+        }
       </Box>
-      <Typography variant="body2" sx={{ lineHeight: 1.55, color: "text.primary" }}>
+      <Typography
+        variant="body2"
+        sx={{
+          lineHeight: 1.55,
+          color: "text.primary",
+          textDecoration: resolved ? "line-through" : "none",
+        }}
+      >
         {item.description}
       </Typography>
       {hasRemediation && (
