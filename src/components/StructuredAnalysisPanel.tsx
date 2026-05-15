@@ -142,10 +142,11 @@ function StreamingState() {
 
 interface FindingGroup { title: string; category: string; items: ArchitectureReview["bottlenecks"] }
 
-function CollapsibleSection({ title, count, color, children }: {
+function CollapsibleSection({ title, count, color, resolvedCount = 0, children }: {
   title: string;
   count: number;
   color?: string;
+  resolvedCount?: number;
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(true);
@@ -173,10 +174,17 @@ function CollapsibleSection({ title, count, color, children }: {
         >
           {title}{!open ? ` (${count})` : ""}
         </Typography>
-        {open
-          ? <ExpandLessIcon sx={{ fontSize: 16, color: color ?? "text.secondary" }} aria-hidden />
-          : <ExpandMoreIcon sx={{ fontSize: 16, color: color ?? "text.secondary" }} aria-hidden />
-        }
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          {resolvedCount > 0 && (
+            <Typography sx={{ fontSize: "0.62rem", fontWeight: 700, color: "#14a88a" }}>
+              {resolvedCount}/{count} resolved
+            </Typography>
+          )}
+          {open
+            ? <ExpandLessIcon sx={{ fontSize: 16, color: color ?? "text.secondary" }} aria-hidden />
+            : <ExpandMoreIcon sx={{ fontSize: 16, color: color ?? "text.secondary" }} aria-hidden />
+          }
+        </Box>
       </Box>
       <Collapse in={open} unmountOnExit timeout={0}>
         {children}
@@ -300,8 +308,10 @@ export default function StructuredAnalysisPanel({ review, loading, streaming = f
           <ScoreCard review={review} quickScan={quickScan} />
 
           {/* Finding groups — high severity first within each */}
-          {findingGroups.map(({ title, category, items }) => (
-            <CollapsibleSection key={title} title={title} count={items.length}>
+          {findingGroups.map(({ title, category, items }) => {
+            const resolvedCount = items.filter((_, i) => resolvedIds.has(`${category}:${i}`)).length;
+            return (
+            <CollapsibleSection key={title} title={title} count={items.length} resolvedCount={resolvedCount}>
               <Stack spacing={1.5}>
                 {items
                   .map((item, i) => ({ item, originalIndex: i }))
@@ -324,7 +334,8 @@ export default function StructuredAnalysisPanel({ review, loading, streaming = f
                   })}
               </Stack>
             </CollapsibleSection>
-          ))}
+            );
+          })}
 
           {/* Strengths */}
           {review.strengths.length > 0 && (
