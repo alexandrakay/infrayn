@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { collection, query, where, orderBy, getDocs } from "firebase/firestore";
+import { collection, query, where, orderBy, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { getClientDb } from "@/lib/firebase";
 import { useAuth } from "@/components/AuthProvider";
 import { SavedReview } from "@/lib/types";
@@ -34,6 +34,11 @@ export default function HistoryPage() {
     fetchReviews();
   }, [user, loading, router]);
 
+  const handleDelete = async (id: string) => {
+    setReviews((prev) => prev.filter((r) => r.id !== id));
+    await deleteDoc(doc(getClientDb(), "reviews", id));
+  };
+
   const handleOpen = (r: SavedReview) => {
     sessionStorage.setItem(
       "pendingReview",
@@ -54,7 +59,7 @@ export default function HistoryPage() {
             No reviews yet. Run one from the Review workbench.
           </Typography>
         ) : (
-          <SystemHistory reviews={reviews} onOpen={handleOpen} />
+          <SystemHistory reviews={reviews} onOpen={handleOpen} onDelete={handleDelete} />
         )}
       </Box>
     </AppShell>
