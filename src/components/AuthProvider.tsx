@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { User, onAuthStateChanged, signInWithPopup, signOut } from "firebase/auth";
 import { getClientAuth, googleProvider } from "@/lib/firebase";
+import { trackEvent } from "@/lib/analytics";
 
 interface AuthContextValue {
   user: User | null;
@@ -32,6 +33,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const handleSignIn = async () => {
     await signInWithPopup(getClientAuth(), googleProvider);
+    trackEvent("sign_in_completed");
   };
 
   const handleSignOut = async () => {

@@ -16,6 +16,7 @@ import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import { ARCHITECTURE_TEMPLATES, ArchitectureTemplate } from "@/lib/templates";
 import { UserTemplate } from "@/lib/userTemplates";
 import { ReviewMode } from "@/lib/types";
+import { trackEvent } from "@/lib/analytics";
 
 interface Props {
   open: boolean;
@@ -37,6 +38,7 @@ export default function TemplatePicker({ open, mode, onSelect, onClose, userTemp
     : ARCHITECTURE_TEMPLATES;
 
   const handleSelectUserTemplate = (ut: UserTemplate) => {
+    trackEvent("template_used", { templateId: ut.id, templateName: ut.name, isUserTemplate: true });
     onSelect({ id: ut.id, name: ut.name, content: ut.content, description: "", suggestedMode: "system" });
   };
 
@@ -102,13 +104,17 @@ export default function TemplatePicker({ open, mode, onSelect, onClose, userTemp
 
           {sorted.map((template) => {
             const isSuggested = template.id === suggested;
+            const handleSelect = () => {
+              trackEvent("template_used", { templateId: template.id, templateName: template.name, isUserTemplate: false });
+              onSelect(template);
+            };
             return (
               <Box
                 key={template.id}
                 role="button"
                 tabIndex={0}
-                onClick={() => onSelect(template)}
-                onKeyDown={(e) => e.key === "Enter" && onSelect(template)}
+                onClick={handleSelect}
+                onKeyDown={(e) => e.key === "Enter" && handleSelect()}
                 sx={{
                   p: 2,
                   borderRadius: 2,
