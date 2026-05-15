@@ -1,11 +1,13 @@
 "use client";
 
-import { Box, Card, CardActionArea, CardContent, Chip, Stack, Typography } from "@mui/material";
+import { Box, Card, CardActionArea, CardContent, Chip, IconButton, Stack, Typography } from "@mui/material";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
 import { SavedReview } from "@/lib/types";
 
 interface Props {
   reviews: SavedReview[];
   onOpen: (r: SavedReview) => void;
+  onDelete?: (id: string) => void;
 }
 
 interface Group {
@@ -41,7 +43,7 @@ function ScoreTrend({ reviews }: { reviews: SavedReview[] }) {
   );
 }
 
-export default function SystemHistory({ reviews, onOpen }: Props) {
+export default function SystemHistory({ reviews, onOpen, onDelete }: Props) {
   const groups: Group[] = [];
   const seen = new Map<string, Group>();
 
@@ -72,44 +74,58 @@ export default function SystemHistory({ reviews, onOpen }: Props) {
               .sort((a, b) => b.createdAt - a.createdAt)
               .map((r) => (
                 <Card key={r.id}>
-                  <CardActionArea onClick={() => onOpen(r)}>
-                    <CardContent>
-                      <Stack
-                        direction="row"
-                        sx={{ justifyContent: "space-between", alignItems: "center", mb: 0.75 }}
-                      >
-                        <Chip
-                          label={r.mode}
-                          size="small"
-                          sx={{ textTransform: "capitalize", fontSize: "0.65rem" }}
-                        />
+                  <Box sx={{ display: "flex", alignItems: "stretch" }}>
+                    <CardActionArea onClick={() => onOpen(r)} sx={{ flex: 1 }}>
+                      <CardContent>
+                        <Stack
+                          direction="row"
+                          sx={{ justifyContent: "space-between", alignItems: "center", mb: 0.75 }}
+                        >
+                          <Chip
+                            label={r.mode}
+                            size="small"
+                            sx={{ textTransform: "capitalize", fontSize: "0.65rem" }}
+                          />
+                          <Typography
+                            sx={{
+                              fontWeight: 700,
+                              fontSize: "0.9rem",
+                              color: scoreColor(r.output.overall_score),
+                            }}
+                          >
+                            {r.output.overall_score}/10
+                          </Typography>
+                        </Stack>
                         <Typography
+                          variant="body2"
                           sx={{
-                            fontWeight: 700,
-                            fontSize: "0.9rem",
-                            color: scoreColor(r.output.overall_score),
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                            overflow: "hidden",
+                            color: "text.secondary",
                           }}
                         >
-                          {r.output.overall_score}/10
+                          {r.input}
                         </Typography>
-                      </Stack>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          display: "-webkit-box",
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: "vertical",
-                          overflow: "hidden",
-                          color: "text.secondary",
-                        }}
-                      >
-                        {r.input}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary" sx={{ mt: 0.75, display: "block" }}>
-                        {new Date(r.createdAt).toLocaleDateString()}
-                      </Typography>
-                    </CardContent>
-                  </CardActionArea>
+                        <Typography variant="caption" color="text.secondary" sx={{ mt: 0.75, display: "block" }}>
+                          {new Date(r.createdAt).toLocaleDateString()}
+                        </Typography>
+                      </CardContent>
+                    </CardActionArea>
+                    {onDelete && (
+                      <Box sx={{ display: "flex", alignItems: "center", pr: 1 }}>
+                        <IconButton
+                          size="small"
+                          aria-label="Delete review"
+                          onClick={() => onDelete(r.id)}
+                          sx={{ color: "text.disabled", "&:hover": { color: "#ef5a4c" } }}
+                        >
+                          <DeleteOutlineIcon fontSize="small" />
+                        </IconButton>
+                      </Box>
+                    )}
+                  </Box>
                 </Card>
               ))}
           </Stack>
