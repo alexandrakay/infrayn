@@ -10,6 +10,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { ReviewMode, ReviewSection, ALL_SECTIONS, ArchitectureReview } from "@/lib/types";
 import { loadUserPreferences, saveUserPreferences } from "@/lib/userPreferences";
 import { UserTemplate, loadUserTemplates, saveUserTemplate, deleteUserTemplate } from "@/lib/userTemplates";
+import { trackEvent } from "@/lib/analytics";
 
 const TOPBAR_HEIGHT = 56;
 const ANON_REVIEW_KEY = "infrayn_anon_used";
@@ -87,10 +88,12 @@ export default function ReviewWorkbench() {
 
     // Block anonymous users who've already used their free review
     if (!user && localStorage.getItem(ANON_REVIEW_KEY)) {
+      trackEvent("sign_in_prompt_shown", { trigger: "blocked_anon" });
       setShowSignInPrompt(true);
       return;
     }
 
+    trackEvent("review_submitted", { mode, quickScan, inputLength: input.trim().length, hasSystemName: !!systemName.trim() });
     setLoading(true);
     setStreaming(false);
     setError("");
@@ -106,6 +109,7 @@ export default function ReviewWorkbench() {
 
       if (!res.ok) {
         const data = await res.json();
+        trackEvent("review_error", { error: data.error ?? "unknown" });
         setError(data.error ?? "Something went wrong.");
         return;
       }
@@ -151,6 +155,7 @@ export default function ReviewWorkbench() {
       }
 
       setReview(parsed);
+      trackEvent("review_completed", { mode, quickScan, score: parsed.overall_score });
 
       if (user) {
         const saveRes = await fetch("/api/save-review", {
@@ -162,7 +167,10 @@ export default function ReviewWorkbench() {
         if (id) setReviewId(id);
       } else {
         localStorage.setItem(ANON_REVIEW_KEY, "1");
-        setTimeout(() => setShowSignInPrompt(true), 1200);
+        setTimeout(() => {
+          trackEvent("sign_in_prompt_shown", { trigger: "post_review" });
+          setShowSignInPrompt(true);
+        }, 1200);
       }
     } catch {
       setError("Something went wrong. Please try again.");
@@ -173,6 +181,7 @@ export default function ReviewWorkbench() {
   };
 
   const handleSignIn = async () => {
+    trackEvent("sign_in_prompt_accepted");
     setShowSignInPrompt(false);
     await signIn();
   };
@@ -230,7 +239,7 @@ export default function ReviewWorkbench() {
         <DialogContent sx={{ p: 0 }}>
           <SignInPrompt
             onSignIn={handleSignIn}
-            onDismiss={() => setShowSignInPrompt(false)}
+            onDismiss={() => { trackEvent("sign_in_prompt_dismissed"); setShowSignInPrompt(false); }}
           />
         </DialogContent>
       </Dialog>
