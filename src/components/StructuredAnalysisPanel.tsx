@@ -14,6 +14,7 @@ import { formatReviewAsMarkdown } from "@/lib/formatReview";
 import FindingCard from "./FindingCard";
 import PressureMap from "./PressureMap";
 import ReportOutline from "./ReportOutline";
+import { trackEvent } from "@/lib/analytics";
 
 function ScoreCard({ review, quickScan }: { review: ArchitectureReview; quickScan?: boolean }) {
   const score = review.overall_score;
@@ -277,12 +278,14 @@ export default function StructuredAnalysisPanel({ review, loading, streaming = f
   const handleCopy = async () => {
     if (!review) return;
     await navigator.clipboard.writeText(formatReviewAsText(review, mode));
+    trackEvent("report_copied", { mode });
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   const handleDownloadMarkdown = () => {
     if (!review) return;
+    trackEvent("report_downloaded", { mode, hasSystemName: !!systemName.trim() });
     const md = formatReviewAsMarkdown(review, mode, systemName);
     const slug = systemName.trim()
       ? systemName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-")

@@ -3,6 +3,7 @@ import { Box, Button, Chip, Collapse, IconButton, Tooltip, Typography, Paper } f
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutlined";
 import { ReviewItem } from "@/lib/types";
+import { trackEvent } from "@/lib/analytics";
 
 const severity = {
   high: { bg: "rgba(239,90,76,0.08)", color: "#ef5a4c", border: "rgba(239,90,76,0.2)", label: "Critical" },
@@ -26,7 +27,7 @@ export default function FindingCard({ item, showRemediation = false, resolved = 
   const resolveButton = (
     <IconButton
       size="small"
-      onClick={isAuthenticated ? onToggle : undefined}
+      onClick={isAuthenticated ? () => { trackEvent("finding_resolved", { severity: item.severity, nowResolved: !resolved }); onToggle?.(); } : undefined}
       disabled={!isAuthenticated}
       aria-label={resolved ? "Mark unresolved" : "Mark resolved"}
       sx={{ p: 0.5, ml: "auto", flexShrink: 0 }}
