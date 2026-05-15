@@ -55,7 +55,6 @@ export default function ReportOutline({ review, mode }: Props) {
     ...(mode !== "system" && review.llm_specific
       ? [{ label: "LLM Pipeline Analysis", status: "ok" as Status }]
       : []),
-    { label: "Remediation Plan", status: "ok" },
   ];
 
   return (
