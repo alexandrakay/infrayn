@@ -3,6 +3,7 @@
 import { Box, Card, CardActionArea, CardContent, Chip, IconButton, Stack, Typography } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
 import { SavedReview } from "@/lib/types";
+import { trackEvent } from "@/lib/analytics";
 
 interface Props {
   reviews: SavedReview[];
@@ -75,7 +76,7 @@ export default function SystemHistory({ reviews, onOpen, onDelete }: Props) {
               .map((r) => (
                 <Card key={r.id}>
                   <Box sx={{ display: "flex", alignItems: "stretch" }}>
-                    <CardActionArea onClick={() => onOpen(r)} sx={{ flex: 1 }}>
+                    <CardActionArea onClick={() => { trackEvent("history_review_opened"); onOpen(r); }} sx={{ flex: 1 }}>
                       <CardContent>
                         <Stack
                           direction="row"
