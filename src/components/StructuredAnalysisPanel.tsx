@@ -9,6 +9,7 @@ import CheckIcon from "@mui/icons-material/Check";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { ArchitectureReview, ReviewItem, ReviewMode } from "@/lib/types";
+import { useResolvedFindings } from "@/lib/useResolvedFindings";
 import FindingCard from "./FindingCard";
 import PressureMap from "./PressureMap";
 import ReportOutline from "./ReportOutline";
@@ -139,7 +140,7 @@ function StreamingState() {
   );
 }
 
-interface FindingGroup { title: string; items: ArchitectureReview["bottlenecks"] }
+interface FindingGroup { title: string; category: string; items: ArchitectureReview["bottlenecks"] }
 
 function CollapsibleSection({ title, count, color, children }: {
   title: string;
@@ -255,10 +256,13 @@ interface Props {
   streaming?: boolean;
   mode: ReviewMode;
   quickScan?: boolean;
+  reviewId?: string | null;
+  isAuthenticated?: boolean;
 }
 
-export default function StructuredAnalysisPanel({ review, loading, streaming = false, mode, quickScan = false }: Props) {
+export default function StructuredAnalysisPanel({ review, loading, streaming = false, mode, quickScan = false, reviewId = null, isAuthenticated = false }: Props) {
   const [copied, setCopied] = useState(false);
+  const { resolvedIds, toggle } = useResolvedFindings(reviewId);
 
   const handleCopy = async () => {
     if (!review) return;
@@ -269,10 +273,10 @@ export default function StructuredAnalysisPanel({ review, loading, streaming = f
 
   const findingGroups: FindingGroup[] = review
     ? [
-        { title: "Bottlenecks", items: review.bottlenecks },
-        { title: "Single Points of Failure", items: review.single_points_of_failure },
-        { title: "Security Gaps", items: review.security_gaps },
-        { title: "Scaling Concerns", items: review.scaling_concerns },
+        { title: "Bottlenecks", category: "bottlenecks", items: review.bottlenecks },
+        { title: "Single Points of Failure", category: "single_points_of_failure", items: review.single_points_of_failure },
+        { title: "Security Gaps", category: "security_gaps", items: review.security_gaps },
+        { title: "Scaling Concerns", category: "scaling_concerns", items: review.scaling_concerns },
       ].filter((g) => g.items.length > 0)
     : [];
 
@@ -296,17 +300,28 @@ export default function StructuredAnalysisPanel({ review, loading, streaming = f
           <ScoreCard review={review} quickScan={quickScan} />
 
           {/* Finding groups — high severity first within each */}
-          {findingGroups.map(({ title, items }) => (
+          {findingGroups.map(({ title, category, items }) => (
             <CollapsibleSection key={title} title={title} count={items.length}>
               <Stack spacing={1.5}>
-                {[...items]
+                {items
+                  .map((item, i) => ({ item, originalIndex: i }))
                   .sort((a, b) => {
                     const order = { high: 0, medium: 1, low: 2 };
-                    return order[a.severity] - order[b.severity];
+                    return order[a.item.severity] - order[b.item.severity];
                   })
-                  .map((item, i) => (
-                    <FindingCard key={i} item={item} showRemediation />
-                  ))}
+                  .map(({ item, originalIndex }) => {
+                    const findingId = `${category}:${originalIndex}`;
+                    return (
+                      <FindingCard
+                        key={originalIndex}
+                        item={item}
+                        showRemediation
+                        resolved={resolvedIds.has(findingId)}
+                        onToggle={() => toggle(findingId)}
+                        isAuthenticated={isAuthenticated}
+                      />
+                    );
+                  })}
               </Stack>
             </CollapsibleSection>
           ))}
@@ -389,9 +404,18 @@ export default function StructuredAnalysisPanel({ review, loading, streaming = f
               color="#7257ff"
             >
               <Stack spacing={1.5}>
-                {review.llm_specific.hallucination_risks.map((item, i) => (
-                  <FindingCard key={i} item={item} />
-                ))}
+                {review.llm_specific.hallucination_risks.map((item, i) => {
+                  const findingId = `llm_hallucination_risks:${i}`;
+                  return (
+                    <FindingCard
+                      key={i}
+                      item={item}
+                      resolved={resolvedIds.has(findingId)}
+                      onToggle={() => toggle(findingId)}
+                      isAuthenticated={isAuthenticated}
+                    />
+                  );
+                })}
               </Stack>
 
               {review.llm_specific.model_recommendations.length > 0 && (

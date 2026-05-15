@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Box, Button, Chip, Collapse, IconButton, Tooltip, Typography, Paper } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutlined";
 import { ReviewItem } from "@/lib/types";
 
 const severity = {

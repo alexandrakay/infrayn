@@ -29,6 +29,7 @@ export default function ReviewWorkbench() {
   const [prefsLoaded, setPrefsLoaded] = useState(false);
   const [userTemplates, setUserTemplates] = useState<UserTemplate[]>([]);
   const [remainingReviews, setRemainingReviews] = useState<number | null>(null);
+  const [reviewId, setReviewId] = useState<string | null>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -36,10 +37,11 @@ export default function ReviewWorkbench() {
     if (rawReview) {
       sessionStorage.removeItem("pendingReview");
       try {
-        const { review: r, input: i, mode: m } = JSON.parse(rawReview);
+        const { review: r, input: i, mode: m, reviewId: rid } = JSON.parse(rawReview);
         if (r) setReview(r);
         if (i) setInput(i);
         if (m) setMode(m);
+        if (rid) setReviewId(rid);
       } catch { /* malformed — ignore */ }
     }
 
@@ -92,6 +94,7 @@ export default function ReviewWorkbench() {
     setStreaming(false);
     setError("");
     setReview(null);
+    setReviewId(null);
 
     try {
       const res = await fetch("/api/review", {
@@ -149,11 +152,13 @@ export default function ReviewWorkbench() {
       setReview(parsed);
 
       if (user) {
-        await fetch("/api/save-review", {
+        const saveRes = await fetch("/api/save-review", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ userId: user.uid, mode, input, output: parsed, systemName }),
         });
+        const { id } = await saveRes.json();
+        if (id) setReviewId(id);
       } else {
         localStorage.setItem(ANON_REVIEW_KEY, "1");
         setTimeout(() => setShowSignInPrompt(true), 1200);
@@ -213,7 +218,7 @@ export default function ReviewWorkbench() {
           userTemplates={userTemplates}
           onSubmit={handleSubmit}
         />
-        <StructuredAnalysisPanel review={review} loading={loading} streaming={streaming} mode={mode} quickScan={quickScan} />
+        <StructuredAnalysisPanel review={review} loading={loading} streaming={streaming} mode={mode} quickScan={quickScan} reviewId={reviewId} isAuthenticated={!!user} />
       </Box>
 
       <Dialog

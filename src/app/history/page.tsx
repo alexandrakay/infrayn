@@ -37,7 +37,7 @@ export default function HistoryPage() {
   const handleOpen = (r: SavedReview) => {
     sessionStorage.setItem(
       "pendingReview",
-      JSON.stringify({ review: r.output, input: r.input, mode: r.mode })
+      JSON.stringify({ review: r.output, input: r.input, mode: r.mode, reviewId: r.id })
     );
     router.push("/review");
   };
