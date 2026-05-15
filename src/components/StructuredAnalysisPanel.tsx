@@ -266,9 +266,10 @@ interface Props {
   quickScan?: boolean;
   reviewId?: string | null;
   isAuthenticated?: boolean;
+  systemName?: string;
 }
 
-export default function StructuredAnalysisPanel({ review, loading, streaming = false, mode, quickScan = false, reviewId = null, isAuthenticated = false }: Props) {
+export default function StructuredAnalysisPanel({ review, loading, streaming = false, mode, quickScan = false, reviewId = null, isAuthenticated = false, systemName = "" }: Props) {
   const [copied, setCopied] = useState(false);
   const { resolvedIds, toggle } = useResolvedFindings(reviewId);
 
@@ -305,6 +306,15 @@ export default function StructuredAnalysisPanel({ review, loading, streaming = f
         <EmptyState />
       ) : (
         <Stack spacing={3} sx={{ p: 3 }}>
+          {systemName.trim() && (
+            <Typography
+              data-testid="system-name"
+              variant="h6"
+              sx={{ fontWeight: 700, lineHeight: 1.2 }}
+            >
+              {systemName.trim()}
+            </Typography>
+          )}
           <ScoreCard review={review} quickScan={quickScan} />
 
           {/* Finding groups — high severity first within each */}

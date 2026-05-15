@@ -37,11 +37,12 @@ export default function ReviewWorkbench() {
     if (rawReview) {
       sessionStorage.removeItem("pendingReview");
       try {
-        const { review: r, input: i, mode: m, reviewId: rid } = JSON.parse(rawReview);
+        const { review: r, input: i, mode: m, reviewId: rid, systemName: sn } = JSON.parse(rawReview);
         if (r) setReview(r);
         if (i) setInput(i);
         if (m) setMode(m);
         if (rid) setReviewId(rid);
+        if (sn) setSystemName(sn);
       } catch { /* malformed — ignore */ }
     }
 
@@ -218,7 +219,7 @@ export default function ReviewWorkbench() {
           userTemplates={userTemplates}
           onSubmit={handleSubmit}
         />
-        <StructuredAnalysisPanel review={review} loading={loading} streaming={streaming} mode={mode} quickScan={quickScan} reviewId={reviewId} isAuthenticated={!!user} />
+        <StructuredAnalysisPanel review={review} loading={loading} streaming={streaming} mode={mode} quickScan={quickScan} reviewId={reviewId} isAuthenticated={!!user} systemName={systemName} />
       </Box>
 
       <Dialog
