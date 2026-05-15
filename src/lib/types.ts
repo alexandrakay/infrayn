@@ -59,6 +59,7 @@ export interface SavedReview {
   systemName?: string;
   output: ArchitectureReview;
   createdAt: number;
+  resolvedFindings?: string[];
 }
 
 export interface UserPreferences {
