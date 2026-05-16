@@ -17,6 +17,8 @@ const baseReview = {
     hallucination_risks: [],
     model_recommendations: [],
     prompt_architecture: [],
+    cost_optimization: [],
+    fallback_strategy: [],
   },
 };
 
