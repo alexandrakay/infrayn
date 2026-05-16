@@ -33,14 +33,21 @@ interface Props {
   onSystemNameChange: (v: string) => void;
   onQuickScanChange: (v: boolean) => void;
   remainingReviews?: number | null;
+  resetInSeconds?: number | null;
   onSaveTemplate?: (name: string) => void;
   onDeleteTemplate?: (id: string) => void;
   onSubmit: () => void;
 }
 
+function formatResetTime(seconds: number): string {
+  if (seconds < 60) return "< 1 min";
+  const mins = Math.ceil(seconds / 60);
+  return `${mins} min`;
+}
+
 export default function ArchitectureInputPanel({
   input, mode, sections, loading, error, systemName, quickScan, isAuthenticated = false, userTemplates = [],
-  remainingReviews,
+  remainingReviews, resetInSeconds,
   onInputChange, onModeChange, onSectionsChange, onSystemNameChange, onQuickScanChange, onSaveTemplate, onDeleteTemplate, onSubmit,
 }: Props) {
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -229,7 +236,9 @@ export default function ArchitectureInputPanel({
         startIcon={<PlayArrowIcon />}
         sx={{ flexShrink: 0 }}
       >
-        {loading ? "Analyzing..." : remainingReviews === 0 ? "Limit reached — resets in 1 hour" : "Run architecture review"}
+        {loading ? "Analyzing..." : remainingReviews === 0
+          ? `Limit reached — resets in ${resetInSeconds != null ? formatResetTime(resetInSeconds) : "1 hour"}`
+          : "Run architecture review"}
       </Button>
 
       <TemplatePicker
