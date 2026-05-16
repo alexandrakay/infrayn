@@ -8,7 +8,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { SavedReview } from "@/lib/types";
 import AppShell from "@/components/AppShell";
 import SystemHistory from "@/components/SystemHistory";
-import { Box, Typography } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 
 export default function HistoryPage() {
   const { user, loading } = useAuth();
@@ -55,9 +55,14 @@ export default function HistoryPage() {
         <Typography variant="h2" sx={{ mb: 3 }}>Past reviews</Typography>
 
         {reviews.length === 0 ? (
-          <Typography variant="body2" color="text.secondary">
-            No reviews yet. Run one from the Review workbench.
-          </Typography>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              No reviews yet.
+            </Typography>
+            <Button variant="contained" onClick={() => router.push("/review")} sx={{ alignSelf: "flex-start" }}>
+              Run your first review
+            </Button>
+          </Box>
         ) : (
           <SystemHistory reviews={reviews} onOpen={handleOpen} onDelete={handleDelete} />
         )}
