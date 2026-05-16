@@ -12,6 +12,8 @@ import { ArchitectureTemplate } from "@/lib/templates";
 import { UserTemplate } from "@/lib/userTemplates";
 import { ReviewMode, ReviewSection } from "@/lib/types";
 
+const MIN_INPUT_LENGTH = 50;
+
 const BLUEPRINT = `
   linear-gradient(rgba(35, 118, 255, 0.045) 1px, transparent 1px),
   linear-gradient(90deg, rgba(35, 118, 255, 0.045) 1px, transparent 1px)
@@ -195,6 +197,11 @@ export default function ArchitectureInputPanel({
       </Box>
 
       {error && <Alert severity="error" sx={{ flexShrink: 0 }}>{error}</Alert>}
+      {input.trim().length > 0 && input.trim().length < MIN_INPUT_LENGTH && (
+        <Typography variant="caption" sx={{ flexShrink: 0, color: "#f5a623" }}>
+          Short descriptions produce shallow reviews — add more detail for better results.
+        </Typography>
+      )}
 
       <Box sx={{ flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <FormControlLabel
