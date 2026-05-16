@@ -9,13 +9,13 @@ jest.mock("@/components/AppShell", () => ({
   default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
-const mockArchitectureInputPanel = jest.fn(() => null);
+const mockArchitectureInputPanel = jest.fn();
 jest.mock("@/components/ArchitectureInputPanel", () => ({
   __esModule: true,
   default: (props: Record<string, unknown>) => { mockArchitectureInputPanel(props); return null; },
 }));
 
-const mockStructuredAnalysisPanel = jest.fn(() => null);
+const mockStructuredAnalysisPanel = jest.fn();
 jest.mock("@/components/StructuredAnalysisPanel", () => ({
   __esModule: true,
   default: (props: Record<string, unknown>) => { mockStructuredAnalysisPanel(props); return null; },

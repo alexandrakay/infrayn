@@ -22,6 +22,8 @@ const baseProps = {
   onSectionsChange: jest.fn(),
   onSystemNameChange: jest.fn(),
   onSubmit: jest.fn(),
+  quickScan: false,
+  onQuickScanChange: jest.fn(),
 };
 
 const makeReview = (id: string, systemName: string, score: number, createdAt: number): SavedReview => ({

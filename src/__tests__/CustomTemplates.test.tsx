@@ -127,6 +127,8 @@ const baseProps = {
   onSystemNameChange: jest.fn(),
   onSaveTemplate: jest.fn(),
   onSubmit: jest.fn(),
+  quickScan: false,
+  onQuickScanChange: jest.fn(),
 };
 
 describe("ArchitectureInputPanel — save as template", () => {
