@@ -14,7 +14,7 @@ const WINDOW_MS = 60 * 60 * 1000;
 async function checkRateLimit(
   key: string,
   limit: number
-): Promise<{ allowed: boolean; remaining: number }> {
+): Promise<{ allowed: boolean; remaining: number; resetInSeconds?: number }> {
   const db = getAdminDb();
   const ref = db.collection("rateLimits").doc(key);
   const snap = await ref.get();
@@ -34,7 +34,8 @@ async function checkRateLimit(
   }
 
   if (data.count >= limit) {
-    return { allowed: false, remaining: 0 };
+    const resetInSeconds = Math.ceil((WINDOW_MS - elapsed) / 1000);
+    return { allowed: false, remaining: 0, resetInSeconds };
   }
 
   await ref.update({ count: data.count + 1 });
@@ -64,10 +65,10 @@ export async function POST(req: NextRequest) {
     : `ip_${req.headers.get("x-forwarded-for") ?? "unknown"}`;
   const limit = userId ? AUTH_LIMIT : ANON_LIMIT;
 
-  const { allowed, remaining } = await checkRateLimit(rateLimitKey, limit);
+  const { allowed, remaining, resetInSeconds } = await checkRateLimit(rateLimitKey, limit);
   if (!allowed) {
     return NextResponse.json(
-      { error: "Rate limit exceeded. Try again in an hour." },
+      { error: "Rate limit exceeded. Try again later.", resetInSeconds },
       { status: 429 }
     );
   }

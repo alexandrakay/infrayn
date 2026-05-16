@@ -30,6 +30,7 @@ export default function ReviewWorkbench() {
   const [prefsLoaded, setPrefsLoaded] = useState(false);
   const [userTemplates, setUserTemplates] = useState<UserTemplate[]>([]);
   const [remainingReviews, setRemainingReviews] = useState<number | null>(null);
+  const [resetInSeconds, setResetInSeconds] = useState<number | null>(null);
   const [reviewId, setReviewId] = useState<string | null>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -110,6 +111,7 @@ export default function ReviewWorkbench() {
       if (!res.ok) {
         const data = await res.json();
         trackEvent("review_error", { error: data.error ?? "unknown" });
+        if (data.resetInSeconds != null) setResetInSeconds(data.resetInSeconds);
         setError(data.error ?? "Something went wrong.");
         return;
       }
@@ -223,6 +225,7 @@ export default function ReviewWorkbench() {
           quickScan={quickScan}
           onQuickScanChange={setQuickScan}
           remainingReviews={remainingReviews}
+          resetInSeconds={resetInSeconds}
           onSaveTemplate={handleSaveTemplate}
           onDeleteTemplate={handleDeleteTemplate}
           userTemplates={userTemplates}
