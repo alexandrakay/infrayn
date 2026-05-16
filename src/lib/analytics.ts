@@ -14,14 +14,27 @@ function getSessionId(): string {
   return id;
 }
 
+const pendingEvents = new Map<string, ReturnType<typeof setTimeout>>();
+
 export function trackEvent(name: string, properties: Record<string, unknown> = {}): void {
-  const userId = getClientAuth().currentUser?.uid ?? null;
-  const sessionId = getSessionId();
-  addDoc(collection(getClientDb(), "events"), {
-    event: name,
-    userId,
-    sessionId,
-    properties,
-    timestamp: Date.now(),
-  }).catch(() => {});
+  // Deduplicate rapid repeated calls for the same event+properties combo
+  const key = name + JSON.stringify(properties);
+  const existing = pendingEvents.get(key);
+  if (existing) clearTimeout(existing);
+
+  pendingEvents.set(
+    key,
+    setTimeout(() => {
+      pendingEvents.delete(key);
+      const userId = getClientAuth().currentUser?.uid ?? null;
+      const sessionId = getSessionId();
+      addDoc(collection(getClientDb(), "events"), {
+        event: name,
+        userId,
+        sessionId,
+        properties,
+        timestamp: Date.now(),
+      }).catch(() => {});
+    }, 500),
+  );
 }
