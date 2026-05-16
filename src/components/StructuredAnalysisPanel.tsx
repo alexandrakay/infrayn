@@ -273,6 +273,7 @@ interface Props {
 
 export default function StructuredAnalysisPanel({ review, loading, streaming = false, mode, quickScan = false, reviewId = null, isAuthenticated = false, systemName = "" }: Props) {
   const [copied, setCopied] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const { resolvedIds, toggle } = useResolvedFindings(reviewId);
 
   const handleCopy = async () => {
@@ -281,6 +282,13 @@ export default function StructuredAnalysisPanel({ review, loading, streaming = f
     trackEvent("report_copied", { mode });
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleCopyLink = async () => {
+    if (!reviewId) return;
+    await navigator.clipboard.writeText(`${window.location.origin}/r/${reviewId}`);
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 2000);
   };
 
   const handleDownloadMarkdown = () => {
@@ -543,6 +551,17 @@ export default function StructuredAnalysisPanel({ review, loading, streaming = f
             >
               Download .md
             </Button>
+            {reviewId && (
+              <Button
+                variant="outlined"
+                fullWidth
+                startIcon={linkCopied ? <CheckIcon /> : <ContentCopyIcon />}
+                onClick={handleCopyLink}
+                sx={{ color: linkCopied ? "#14a88a" : "text.secondary", borderColor: "divider" }}
+              >
+                {linkCopied ? "Copied!" : "Copy link"}
+              </Button>
+            )}
           </Stack>
         </Stack>
       )}
